@@ -72,37 +72,40 @@ public class DocumentVerificationService {
         String message;
 
         try {
-            // Retrieve encrypted file from storage
-            byte[] encryptedBytes = storageService.retrieve(version.getObjectKey());
+            // Retrieve file from storage
+            byte[] fileBytes = storageService.retrieve(version.getObjectKey());
 
-            // Unwrap DEK
-            byte[] wrappedDekBytes = Base64.getDecoder().decode(version.getWrappedDek());
-            SecretKey dek = keyManagementService.unwrapDek(wrappedDekBytes);
-
-            // Decrypt AES-256-GCM
-            byte[] decryptedBytes = encryptionService.decrypt(encryptedBytes, dek, version.getEncryptionNonce());
+            byte[] rawBytes;
+            if (version.getWrappedDek() != null && !version.getWrappedDek().equals("DIRECT_STORAGE")
+                    && version.getEncryptionNonce() != null && !version.getEncryptionNonce().equals("N/A")) {
+                byte[] wrappedDekBytes = Base64.getDecoder().decode(version.getWrappedDek());
+                SecretKey dek = keyManagementService.unwrapDek(wrappedDekBytes);
+                rawBytes = encryptionService.decrypt(fileBytes, dek, version.getEncryptionNonce());
+            } else {
+                rawBytes = fileBytes;
+            }
 
             // SHA-256 integrity
-            calculatedHash = hashService.calculateSha256(decryptedBytes);
+            calculatedHash = hashService.calculateSha256(rawBytes);
             hashValid = calculatedHash.equalsIgnoreCase(version.getOriginalSha256());
 
             // Digital signature verification
-            sigValid = digitalSignatureService.verify(decryptedBytes, version.getSignature());
+            sigValid = digitalSignatureService.verify(rawBytes, version.getSignature());
 
             if (hashValid && sigValid) {
                 integrityVerified = true;
                 overallStatus = "VERIFIED";
-                message = "All security checks passed. Integrity verified, digital signature valid, DEK securely wrapped.";
+                message = "All security checks passed. MinIO object integrity verified, digital signature valid, MySQL metadata intact.";
             } else if (!hashValid) {
                 overallStatus = "TAMPERED";
-                message = "CRITICAL: SHA-256 integrity check failed. File content has been modified!";
+                message = "CRITICAL: SHA-256 integrity check failed. MinIO file content has been modified or tampered with!";
             } else {
                 overallStatus = "SIGNATURE_INVALID";
                 message = "WARNING: Digital signature does not match author public key.";
             }
         } catch (Exception e) {
             overallStatus = "TAMPERED";
-            message = "Verification failed (Ciphertext/Tag mismatch or corrupted storage): " + e.getMessage();
+            message = "Verification failed (Storage retrieval error or corrupted object): " + e.getMessage();
         }
 
         String filenameToDisplay = (version.getFilename() != null && !version.getFilename().trim().isEmpty())

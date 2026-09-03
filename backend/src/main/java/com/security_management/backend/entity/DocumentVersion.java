@@ -35,16 +35,16 @@ public class DocumentVersion {
     @Column(name = "original_sha256", length = 64, nullable = false)
     private String originalSha256;
 
-    @Column(name = "encryption_algorithm", length = 64, nullable = false)
+    @Column(name = "encryption_algorithm", length = 64)
     private String encryptionAlgorithm;
 
-    @Column(name = "encryption_nonce", length = 128, nullable = false)
+    @Column(name = "encryption_nonce", length = 128)
     private String encryptionNonce;
 
     @Column(name = "authentication_tag", length = 128)
     private String authenticationTag;
 
-    @Column(name = "wrapped_dek", length = 1024, nullable = false)
+    @Column(name = "wrapped_dek", length = 1024)
     private String wrappedDek;
 
     @Column(name = "signature", length = 2048, nullable = false)
