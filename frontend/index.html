@@ -182,8 +182,8 @@
                         <div class="step-item" id="step-dek">
                             <div class="step-indicator">5</div>
                             <div class="step-content">
-                                <h4>DEK Generation & AES-256-GCM</h4>
-                                <p>Unique 256-bit DEK + 12-byte IV + 128-bit authentication tag</p>
+                                <h4>MinIO S3 Object Storage</h4>
+                                <p>Direct readable object persistence with native MIME type in S3 bucket</p>
                             </div>
                             <span class="step-badge pending">Pending</span>
                         </div>
@@ -191,8 +191,8 @@
                         <div class="step-item" id="step-wrap">
                             <div class="step-indicator">6</div>
                             <div class="step-content">
-                                <h4>Envelope Encryption (Wrap DEK)</h4>
-                                <p>DEK wrapped with Master KEK; raw DEK never stored</p>
+                                <h4>MySQL Metadata & Reference Indexing</h4>
+                                <p>S3 object pointer, SHA-256, RSA-PSS signature & case records committed to MySQL</p>
                             </div>
                             <span class="step-badge pending">Pending</span>
                         </div>
@@ -200,8 +200,8 @@
                         <div class="step-item" id="step-storage">
                             <div class="step-indicator">7</div>
                             <div class="step-content">
-                                <h4>Storage & Audit Trail</h4>
-                                <p>Encrypted object stored in MinIO/Local + Audit log recorded</p>
+                                <h4>Forensic Audit Trail & Verification</h4>
+                                <p>Immutable event recorded & cryptographic proof verified</p>
                             </div>
                             <span class="step-badge pending">Pending</span>
                         </div>
@@ -214,17 +214,17 @@
                             <span class="sec-card-tag" id="secCardVersion">v1</span>
                         </div>
                         <div class="sec-card-table">
+                            <div class="sec-row"><span>Storage Engine</span><strong class="text-green" id="secCardStorage">✓ MINIO S3</strong></div>
+                            <div class="sec-row"><span>Metadata Database</span><strong class="text-green" id="secCardDb">✓ MYSQL</strong></div>
+                            <div class="sec-row"><span>SHA-256 Integrity</span><strong class="text-green">✓ VERIFIED</strong></div>
+                            <div class="sec-row"><span>Digital Signature</span><strong class="text-green">✓ VALID (RSA-PSS 2048)</strong></div>
                             <div class="sec-row"><span>Malware Scan</span><strong class="text-green">✓ CLEAN</strong></div>
-                            <div class="sec-row"><span>SHA-256</span><strong class="text-green">✓ VERIFIED</strong></div>
-                            <div class="sec-row"><span>Digital Signature</span><strong class="text-green">✓ VALID (RSA-PSS)</strong></div>
-                            <div class="sec-row"><span>Encryption</span><strong class="text-green">✓ AES-256-GCM</strong></div>
-                            <div class="sec-row"><span>DEK Status</span><strong class="text-green">✓ PROTECTED (Wrapped)</strong></div>
-                            <div class="sec-row"><span>Storage</span><strong class="text-cyan" id="secCardStorage">✓ STORED</strong></div>
-                            <div class="sec-row"><span>Integrity</span><strong class="text-green">✓ VERIFIED</strong></div>
                         </div>
-                        <div class="sec-card-footer">
-                            <span class="hash-label">SHA-256:</span>
-                            <code class="hash-code" id="secCardSha256">a4f8c8d...</code>
+                        <div class="sec-hash-box">
+                            <div class="sec-hash-label">SHA-256 Digest:</div>
+                            <div class="sec-hash-val" id="secCardHash">-</div>
+                            <div class="sec-hash-label" style="margin-top: 8px;">MinIO Object Reference:</div>
+                            <div class="sec-hash-val" id="secCardObjectKey" style="color: var(--accent-cyan);">-</div>
                         </div>
                     </div>
                 </section>

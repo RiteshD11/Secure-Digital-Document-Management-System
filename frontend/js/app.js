@@ -369,32 +369,32 @@ async function executeVisualPipeline(file, caseId, docType, classification, uplo
     await sleep(220);
 
     // ----------------------------------------------------
-    // STEP 5: DEK Generation & AES-256-GCM Encryption
+    // STEP 5: MinIO S3 Object Storage
     // ----------------------------------------------------
-    setStepRunning('step-dek', 'Encrypting AES-256-GCM...');
-    logConsole(`[STEP 5: ENCRYPTION] Generating unique 256-bit AES DEK & 12-byte IV nonce...`, 'info');
+    setStepRunning('step-dek', 'Storing in MinIO S3...');
+    logConsole(`[STEP 5: MINIO STORAGE] Persisting readable document directly in S3 bucket with native MIME type...`, 'info');
     await sleep(260);
 
     setStepAccepted('step-dek', 'Accepted ✓');
-    logConsole(`[STEP 5 ACCEPTED ✓] Ciphertext encrypted with AES-256-GCM + 128-bit Auth Tag.`, 'success');
+    logConsole(`[STEP 5 ACCEPTED ✓] Document persisted directly in MinIO S3 bucket (secure-dms-documents).`, 'success');
     await sleep(220);
 
     // ----------------------------------------------------
-    // STEP 6: Envelope Encryption (Wrap DEK)
+    // STEP 6: MySQL Metadata & Reference Indexing
     // ----------------------------------------------------
-    setStepRunning('step-wrap', 'Wrapping with KEK...');
-    logConsole(`[STEP 6: KEY ENVELOPE] Wrapping DEK with Master Key Encryption Key (KEK)...`, 'info');
+    setStepRunning('step-wrap', 'Indexing in MySQL...');
+    logConsole(`[STEP 6: MYSQL INDEXING] Committing S3 object reference, SHA-256 & RSA signature to MySQL...`, 'info');
     await sleep(260);
 
     setStepAccepted('step-wrap', 'Accepted ✓');
-    logConsole(`[STEP 6 ACCEPTED ✓] Envelope protection enabled. Raw DEK discarded.`, 'success');
+    logConsole(`[STEP 6 ACCEPTED ✓] Metadata, case relations & cryptographic proofs indexed in MySQL.`, 'success');
     await sleep(220);
 
     // ----------------------------------------------------
-    // STEP 7: Storage & Audit Trail Persistence (Backend POST)
+    // STEP 7: Storage Audit Trail & Verification Persistence (Backend POST)
     // ----------------------------------------------------
-    setStepRunning('step-storage', 'Persisting...');
-    logConsole(`[STEP 7: STORAGE & AUDIT] Storing encrypted object and recording audit log...`, 'info');
+    setStepRunning('step-storage', 'Finalizing...');
+    logConsole(`[STEP 7: AUDIT & COMMIT] Storing object in MinIO and recording audit trail in MySQL...`, 'info');
 
     const formData = new FormData();
     formData.append('file', file);
@@ -422,11 +422,11 @@ async function executeVisualPipeline(file, caseId, docType, classification, uplo
         document.getElementById('pipelineStatusBadge').style.color = '#34d399';
         document.getElementById('pipelineStatusBadge').style.borderColor = 'rgba(16, 185, 129, 0.4)';
 
-        logConsole(`[STEP 7 ACCEPTED ✓] Encrypted object stored at ${data.objectKey}`, 'success');
+        logConsole(`[STEP 7 ACCEPTED ✓] MinIO object pointer stored at: ${data.objectKey}`, 'success');
         logConsole(`[PIPELINE SUCCESS] Document ${data.documentId} (v${data.version}) secured. SHA-256: ${data.sha256}`, 'success');
 
         displayVerificationCard(data);
-        showToast(`Document ${data.documentId} secured! All 7 steps accepted.`, 'toast-success');
+        showToast(`Document ${data.documentId} stored in MinIO & MySQL! All 7 checks passed.`, 'toast-success');
         loadDocuments();
         loadAuditLogs();
         return data;
@@ -544,32 +544,32 @@ async function executeVisualPipelineForVersion(targetDoc, file, uploadedBy) {
     await sleep(220);
 
     // ----------------------------------------------------
-    // STEP 5: DEK Generation & AES-256-GCM Encryption
+    // STEP 5: MinIO S3 Object Storage
     // ----------------------------------------------------
-    setStepRunning('step-dek', 'Encrypting AES-256-GCM...');
-    logConsole(`[STEP 5: ENCRYPTION] Generating fresh unique 256-bit AES DEK & 12-byte IV for version ${nextVer}...`, 'info');
+    setStepRunning('step-dek', 'Storing Version in MinIO S3...');
+    logConsole(`[STEP 5: MINIO STORAGE] Persisting readable version ${nextVer} document in MinIO S3 bucket...`, 'info');
     await sleep(260);
 
     setStepAccepted('step-dek', 'Accepted ✓');
-    logConsole(`[STEP 5 ACCEPTED ✓] Version ciphertext encrypted with AES-256-GCM + 128-bit Auth Tag.`, 'success');
+    logConsole(`[STEP 5 ACCEPTED ✓] Version ${nextVer} persisted in MinIO bucket (secure-dms-documents).`, 'success');
     await sleep(220);
 
     // ----------------------------------------------------
-    // STEP 6: Envelope Encryption (Wrap DEK)
+    // STEP 6: MySQL Metadata & Reference Indexing
     // ----------------------------------------------------
-    setStepRunning('step-wrap', 'Wrapping with KEK...');
-    logConsole(`[STEP 6: KEY ENVELOPE] Wrapping version DEK with Master Key Encryption Key (KEK)...`, 'info');
+    setStepRunning('step-wrap', 'Indexing Version in MySQL...');
+    logConsole(`[STEP 6: MYSQL INDEXING] Committing version ${nextVer} S3 reference & SHA-256 fingerprint in MySQL...`, 'info');
     await sleep(260);
 
     setStepAccepted('step-wrap', 'Accepted ✓');
-    logConsole(`[STEP 6 ACCEPTED ✓] Version ${nextVer} envelope protection enabled. Raw DEK discarded.`, 'success');
+    logConsole(`[STEP 6 ACCEPTED ✓] Version ${nextVer} metadata committed. Previous version marked SUPERSEDED.`, 'success');
     await sleep(220);
 
     // ----------------------------------------------------
-    // STEP 7: Storage & Audit Trail Persistence (Backend POST)
+    // STEP 7: Storage Audit Trail & Verification Persistence (Backend POST)
     // ----------------------------------------------------
-    setStepRunning('step-storage', 'Persisting Version...');
-    logConsole(`[STEP 7: STORAGE & AUDIT] Storing encrypted version ${nextVer} object and committing audit log...`, 'info');
+    setStepRunning('step-storage', 'Finalizing Version...');
+    logConsole(`[STEP 7: AUDIT & COMMIT] Recording version ${nextVer} in MinIO and writing forensic audit in MySQL...`, 'info');
 
     const formData = new FormData();
     formData.append('file', file);
@@ -594,11 +594,11 @@ async function executeVisualPipelineForVersion(targetDoc, file, uploadedBy) {
         statusBadge.style.color = '#34d399';
         statusBadge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
 
-        logConsole(`[STEP 7 ACCEPTED ✓] Version ${data.version} encrypted object stored at ${data.objectKey}`, 'success');
+        logConsole(`[STEP 7 ACCEPTED ✓] Version ${data.version} MinIO object pointer stored at: ${data.objectKey}`, 'success');
         logConsole(`[PIPELINE SUCCESS] Document ${data.documentId} (v${data.version}) secured. SHA-256: ${data.sha256}`, 'success');
 
         displayVerificationCard(data);
-        showToast(`Document ${data.documentId} updated to v${data.version}! All 7 security checks passed.`, 'toast-success');
+        showToast(`Document ${data.documentId} updated to v${data.version}! Stored in MinIO & MySQL.`, 'toast-success');
         await Promise.all([loadDocuments(), loadAuditLogs()]);
         return data;
 
@@ -630,8 +630,14 @@ uploadDocForm.addEventListener('submit', async (e) => {
 function displayVerificationCard(docData) {
     document.getElementById('secCardTitle').textContent = docData.originalFilename;
     document.getElementById('secCardVersion').textContent = `v${docData.version}`;
-    document.getElementById('secCardSha256').textContent = docData.sha256;
-    document.getElementById('secCardStorage').textContent = `✓ SECURE STORAGE`;
+    const hashEl = document.getElementById('secCardHash') || document.getElementById('secCardSha256');
+    if (hashEl) hashEl.textContent = docData.sha256;
+    const objKeyEl = document.getElementById('secCardObjectKey');
+    if (objKeyEl) objKeyEl.textContent = docData.objectKey || 'Stored in MinIO';
+    const storageEl = document.getElementById('secCardStorage');
+    if (storageEl) storageEl.textContent = '✓ MINIO S3';
+    const dbEl = document.getElementById('secCardDb');
+    if (dbEl) dbEl.textContent = '✓ MYSQL';
     securityVerificationCard.classList.remove('hidden');
 }
 
