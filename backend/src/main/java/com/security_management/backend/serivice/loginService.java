@@ -21,8 +21,12 @@ public class loginService {
     private registerService registerService;
 
     @Autowired
+    private otpService otpService;
+
+    @Autowired
     private AuthenticationManager authenticationManager;
-    public loginResponseDto loginUser(@RequestBody loginRequestDto logindto){
+    public loginResponseDto loginUser( loginRequestDto logindto){
+
 
         Authentication authentication=authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(logindto.getUsername(),logindto.getPassword())
@@ -32,15 +36,18 @@ public class loginService {
                  */
         );
 
+
       if(authentication.isAuthenticated()){
-          user use =registerService.getSingleUser(logindto.getUsername());
+          otpService.sendOtpForLogin(logindto.getUsername());
+//          user use =registerService.getSingleUser(logindto.getUsername());
 
-            String token=authUtl.generateAccessToekn(use);
+//            String token=authUtl.generateAccessToekn(use);
 
-          return new loginResponseDto(use.getUsername(),token);
-      }else{
-          return new loginResponseDto();
+
+
       }
+          return new loginResponseDto();
+
 
 
 

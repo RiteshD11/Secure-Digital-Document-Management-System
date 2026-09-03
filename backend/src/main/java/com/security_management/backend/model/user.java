@@ -25,12 +25,19 @@ public class user {
     @NotNull
     private String firstName;
     @NotNull
-    private String SecondName;
+    private String lastName;
     @NotNull
     private String position;
 
+    @NotNull
+    private String aadharNumber;
+
+    @NotNull
+    private String phoneNumber;
+
     @Lob // large object
-    private byte[] imageData;
+    private byte[] profileImage;
+
 
 
 
