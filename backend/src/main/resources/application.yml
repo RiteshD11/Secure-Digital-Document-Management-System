@@ -1,0 +1,73 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: secure-dms-backend
+  profiles:
+    active: dev
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 105MB
+
+# Default Dev Profile: Zero-setup persistent H2 database so anyone can run out of the box
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:h2:file:./data/secure_dms;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE;MODE=MySQL
+    driverClassName: org.h2.Driver
+    username: sa
+    password: 
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# Production MySQL Profile: As specified in Phase 2 Step 2
+---
+spring:
+  config:
+    activate:
+      on-profile: mysql
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/secure_dms?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:your_password}
+    driverClassName: com.mysql.cj.jdbc.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+---
+# DMS Security & Storage Configuration
+dms:
+  storage:
+    type: auto # 'minio', 'local', or 'auto' (tries MinIO, falls back to local)
+    local:
+      directory: ./storage/encrypted
+  minio:
+    endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+    accessKey: ${MINIO_ACCESS_KEY:minioadmin}
+    secretKey: ${MINIO_SECRET_KEY:minioadmin}
+    bucketName: ${MINIO_BUCKET:secure-dms-documents}
+    enabled: ${MINIO_ENABLED:true}
+  clamav:
+    enabled: ${CLAMAV_ENABLED:false}
+    host: ${CLAMAV_HOST:localhost}
+    port: ${CLAMAV_PORT:3310}
+    connectionTimeout: 2000
+    readTimeout: 10000
+  security:
+    kekMasterSecret: ${KEK_MASTER_SECRET:SecureDmsMasterKeyEncryptionKey2026!} # 32+ bytes for AES-256 KEK
+    rsaKeySize: 2048
