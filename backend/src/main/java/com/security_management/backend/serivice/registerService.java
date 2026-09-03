@@ -15,13 +15,16 @@ public class registerService {
     private emailService emailService;
 
     @Autowired
+    private otpService otpService;
+    @Autowired
     public userRepository userRepository;
     private BCryptPasswordEncoder encoder=new BCryptPasswordEncoder(12);
 
-    public user registerUser(user use){
+    public void registerUser(String  mail){
 
+        otpService.sendOtp(mail);
 
-
+/*
 //         Here Code for the otp
         String sub="Registration Successfull..";
         String email=use.getUsername();
@@ -33,7 +36,9 @@ public class registerService {
         use.setPassword(encoder.encode(use.getPassword()));
 
         userRepository.save(use);
-       return use;
+
+ */
+//       return null;
     }
 
     public user getSingleUser(String username){
