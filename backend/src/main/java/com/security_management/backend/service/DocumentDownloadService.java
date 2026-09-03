@@ -126,40 +126,35 @@ public class DocumentDownloadService {
         log.info("Processing download request: doc='{}', version={}, user='{}'",
                 documentId, versionToFetch, effectiveUserId);
 
-        // Step 3: Fetch encrypted file from Storage (MinIO / Local)
-        byte[] encryptedBytes;
+        // Step 3: Fetch file from Storage (MinIO / Local)
+        byte[] fileBytes;
         try {
-            encryptedBytes = storageService.retrieve(version.getObjectKey());
+            fileBytes = storageService.retrieve(version.getObjectKey());
         } catch (Exception e) {
             auditService.logEvent(effectiveUserId, documentId, document.getCaseId(),
                     "DOWNLOAD_FAILED", "FAILURE", ipAddress, "Object retrieval failed from storage: " + e.getMessage());
-            throw new RuntimeException("Encrypted file could not be retrieved from storage: " + e.getMessage(), e);
+            throw new RuntimeException("File could not be retrieved from storage: " + e.getMessage(), e);
         }
 
-        // Step 4: Unwrap DEK using KEK
-        SecretKey dek;
-        try {
-            byte[] wrappedDekBytes = Base64.getDecoder().decode(version.getWrappedDek());
-            dek = keyManagementService.unwrapDek(wrappedDekBytes);
-        } catch (Exception e) {
-            auditService.logEvent(effectiveUserId, documentId, document.getCaseId(),
-                    "DECRYPTION_FAILED", "FAILURE", ipAddress, "Failed to unwrap DEK: " + e.getMessage());
-            throw new RuntimeException("DEK unwrap failed: " + e.getMessage(), e);
-        }
-
-        // Step 5: Decrypt ciphertext using AES-256-GCM
+        // Backward compatibility: decrypt only if legacy AES encrypted version
         byte[] decryptedBytes;
-        try {
-            decryptedBytes = encryptionService.decrypt(encryptedBytes, dek, version.getEncryptionNonce());
-        } catch (Exception e) {
-            // Tampered ciphertext or corrupted key/IV triggers AEADBadTagException
-            auditService.logEvent(effectiveUserId, documentId, document.getCaseId(),
-                    "INTEGRITY_FAILED", "FAILURE", ipAddress,
-                    "CRITICAL SECURITY ALERT: AES-256-GCM tag mismatch or tampered ciphertext detected during decryption!");
-            throw new IntegrityException("Decryption failed: Ciphertext or IV was modified/tampered. AES-256-GCM tag mismatch.", e);
+        if (version.getWrappedDek() != null && !version.getWrappedDek().equals("DIRECT_STORAGE")
+                && version.getEncryptionNonce() != null && !version.getEncryptionNonce().equals("N/A")) {
+            try {
+                byte[] wrappedDekBytes = Base64.getDecoder().decode(version.getWrappedDek());
+                SecretKey dek = keyManagementService.unwrapDek(wrappedDekBytes);
+                decryptedBytes = encryptionService.decrypt(fileBytes, dek, version.getEncryptionNonce());
+            } catch (Exception e) {
+                auditService.logEvent(effectiveUserId, documentId, document.getCaseId(),
+                        "INTEGRITY_FAILED", "FAILURE", ipAddress,
+                        "CRITICAL SECURITY ALERT: AES-256-GCM tag mismatch or tampered ciphertext detected during decryption!");
+                throw new IntegrityException("Decryption failed: Ciphertext or IV was modified/tampered. AES-256-GCM tag mismatch.", e);
+            }
+        } else {
+            decryptedBytes = fileBytes;
         }
 
-        // Step 6: Phase 21 - Integrity Verification (SHA-256)
+        // Step 4: Integrity Verification (SHA-256)
         String calculatedSha256 = hashService.calculateSha256(decryptedBytes);
         boolean hashMatches = calculatedSha256.equalsIgnoreCase(version.getOriginalSha256());
 

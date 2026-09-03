@@ -137,32 +137,22 @@ public class DocumentUploadService {
         // Step 6: Phase 9 - Digital Signature (RSA-PSS)
         String signatureBase64 = digitalSignatureService.sign(rawBytes);
 
-        // Step 7: Phase 10 - Generate 256-bit AES DEK
-        SecretKey dek = keyManagementService.generateDek();
+        String sanitizedFilename = fileValidationService.sanitizeFilename(file.getOriginalFilename());
+        String mimeType = fileValidationService.detectMimeType(rawBytes, sanitizedFilename);
 
-        // Step 8: Phase 11 - AES-256-GCM Encryption with fresh IV
-        EncryptionService.EncryptedResult encryptedResult = encryptionService.encrypt(rawBytes, dek);
-
-        // Step 9: Phase 12 & 13 - Wrap DEK with KEK
-        byte[] wrappedDekBytes = keyManagementService.wrapDek(dek);
-        String wrappedDekBase64 = Base64.getEncoder().encodeToString(wrappedDekBytes);
-
-        // Generate ID and object key
+        // Generate ID and direct MinIO object key (preserving sanitized filename)
         String documentId = generateUniqueDocumentId();
         int versionNumber = 1;
-        String objectKey = String.format("cases/%s/documents/%s/versions/v%d/file.enc",
-                effectiveCaseId, documentId, versionNumber);
+        String objectKey = String.format("cases/%s/documents/%s/versions/v%d/%s",
+                effectiveCaseId, documentId, versionNumber, sanitizedFilename);
 
-        // Step 10: Store encrypted file in Storage (MinIO / Local)
+        // Step 7: Store readable file directly in Storage (MinIO S3 / Local) with native MIME type
         boolean storedSuccessfully = false;
         try {
-            storageService.store(objectKey, encryptedResult.getCiphertextWithTag(), "application/octet-stream");
+            storageService.store(objectKey, rawBytes, mimeType);
             storedSuccessfully = true;
 
-            // Step 11: Save metadata in Database
-            String sanitizedFilename = fileValidationService.sanitizeFilename(file.getOriginalFilename());
-            String mimeType = fileValidationService.detectMimeType(rawBytes, sanitizedFilename);
-
+            // Step 8: Save metadata & cryptographic signatures in MySQL Database
             Document document = Document.builder()
                     .id(documentId)
                     .caseId(effectiveCaseId)
@@ -182,10 +172,10 @@ public class DocumentUploadService {
                     .versionNumber(versionNumber)
                     .objectKey(objectKey)
                     .originalSha256(originalSha256)
-                    .encryptionAlgorithm(encryptedResult.getAlgorithm())
-                    .encryptionNonce(encryptedResult.getIvBase64())
-                    .authenticationTag("EMBEDDED_GCM_TAG")
-                    .wrappedDek(wrappedDekBase64)
+                    .encryptionAlgorithm("MINIO_DIRECT_STORAGE")
+                    .encryptionNonce("N/A")
+                    .authenticationTag("N/A")
+                    .wrappedDek("DIRECT_STORAGE")
                     .signature(signatureBase64)
                     .signatureAlgorithm(digitalSignatureService.getSignatureAlgorithm())
                     .signedBy("SECURE_DMS_SIGNER")
@@ -200,7 +190,7 @@ public class DocumentUploadService {
             documentRepository.save(document);
             documentVersionRepository.save(documentVersion);
 
-            // Step 12: Audit Logging
+            // Step 9: Audit Logging
             auditService.logEvent(
                     effectiveUserId,
                     documentId,
@@ -208,8 +198,8 @@ public class DocumentUploadService {
                     "DOCUMENT_UPLOADED",
                     "SUCCESS",
                     ipAddress,
-                    String.format("Uploaded '%s' (Version %d, SHA-256: %s, Encrypted with AES-256-GCM, Envelope Key Wrapped)",
-                            sanitizedFilename, versionNumber, originalSha256)
+                    String.format("Stored '%s' in MinIO at '%s' (Version %d, SHA-256: %s, Digital Signature: %s)",
+                            sanitizedFilename, objectKey, versionNumber, originalSha256, digitalSignatureService.getSignatureAlgorithm())
             );
 
             return UploadDocumentResponse.builder()
@@ -225,12 +215,12 @@ public class DocumentUploadService {
                     .documentType(effectiveDocType)
                     .classification(effectiveClassification)
                     .signatureAlgorithm(digitalSignatureService.getSignatureAlgorithm())
-                    .encryptionAlgorithm(encryptedResult.getAlgorithm())
+                    .encryptionAlgorithm("MINIO_DIRECT_STORAGE")
                     .createdAt(document.getCreatedAt())
                     .build();
 
         } catch (Exception e) {
-            // Phase 19: Handle failures correctly - clean up orphan object
+            // Handle failures correctly - clean up orphan object
             if (storedSuccessfully) {
                 log.warn("Database save failed after storage upload; rolling back and deleting orphan object {}", objectKey);
                 storageService.delete(objectKey);
@@ -305,17 +295,15 @@ public class DocumentUploadService {
         String originalSha256 = hashService.calculateSha256(rawBytes);
         String signatureBase64 = digitalSignatureService.sign(rawBytes);
 
-        // Generate fresh unique DEK for the new version
-        SecretKey dek = keyManagementService.generateDek();
-        EncryptionService.EncryptedResult encryptedResult = encryptionService.encrypt(rawBytes, dek);
-        byte[] wrappedDekBytes = keyManagementService.wrapDek(dek);
-        String wrappedDekBase64 = Base64.getEncoder().encodeToString(wrappedDekBytes);
+        String sanitizedFilename = fileValidationService.sanitizeFilename(file.getOriginalFilename());
+        String detectedMime = fileValidationService.detectMimeType(rawBytes, sanitizedFilename);
 
         int newVersionNumber = document.getCurrentVersion() + 1;
-        String objectKey = String.format("cases/%s/documents/%s/versions/v%d/file.enc",
-                document.getCaseId(), documentId, newVersionNumber);
+        String objectKey = String.format("cases/%s/documents/%s/versions/v%d/%s",
+                document.getCaseId(), documentId, newVersionNumber, sanitizedFilename);
 
-        storageService.store(objectKey, encryptedResult.getCiphertextWithTag(), "application/octet-stream");
+        // Store version file directly in MinIO / Local storage with native MIME type
+        storageService.store(objectKey, rawBytes, detectedMime);
 
         // Mark previous version as SUPERSEDED
         documentVersionRepository.findTopByDocumentIdOrderByVersionNumberDesc(documentId)
@@ -324,18 +312,15 @@ public class DocumentUploadService {
                     documentVersionRepository.save(prev);
                 });
 
-        String sanitizedFilename = fileValidationService.sanitizeFilename(file.getOriginalFilename());
-        String detectedMime = fileValidationService.detectMimeType(rawBytes, sanitizedFilename);
-
         DocumentVersion newVersion = DocumentVersion.builder()
                 .documentId(documentId)
                 .versionNumber(newVersionNumber)
                 .objectKey(objectKey)
                 .originalSha256(originalSha256)
-                .encryptionAlgorithm(encryptedResult.getAlgorithm())
-                .encryptionNonce(encryptedResult.getIvBase64())
-                .authenticationTag("EMBEDDED_GCM_TAG")
-                .wrappedDek(wrappedDekBase64)
+                .encryptionAlgorithm("MINIO_DIRECT_STORAGE")
+                .encryptionNonce("N/A")
+                .authenticationTag("N/A")
+                .wrappedDek("DIRECT_STORAGE")
                 .signature(signatureBase64)
                 .signatureAlgorithm(digitalSignatureService.getSignatureAlgorithm())
                 .signedBy("SECURE_DMS_SIGNER")
@@ -363,8 +348,8 @@ public class DocumentUploadService {
                 "VERSION_CREATED",
                 "SUCCESS",
                 ipAddress,
-                String.format("Created new version %d for document '%s' (SHA-256: %s, MIME: %s)",
-                        newVersionNumber, sanitizedFilename, originalSha256, detectedMime)
+                String.format("Stored version %d in MinIO for '%s' at '%s' (SHA-256: %s, MIME: %s)",
+                        newVersionNumber, sanitizedFilename, objectKey, originalSha256, detectedMime)
         );
 
         return UploadDocumentResponse.builder()
@@ -380,7 +365,7 @@ public class DocumentUploadService {
                 .documentType(document.getDocumentType())
                 .classification(document.getClassification())
                 .signatureAlgorithm(digitalSignatureService.getSignatureAlgorithm())
-                .encryptionAlgorithm(encryptedResult.getAlgorithm())
+                .encryptionAlgorithm("MINIO_DIRECT_STORAGE")
                 .createdAt(newVersion.getCreatedAt())
                 .build();
     }
