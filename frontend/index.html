@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Digital Document Management System | Cryptographic Security Dashboard</title>
+    <meta name="description" content="Secure DMS featuring AES-256-GCM envelope encryption, RSA-PSS digital signatures, ClamAV scanning, and immutable audit logs.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation Header -->
+        <header class="top-nav">
+            <div class="brand-group">
+                <div class="shield-logo">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <path d="M9 12l2 2 4-4"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="brand-title">Secure DMS <span class="badge-tag">AES-256-GCM</span></h1>
+                    <p class="brand-subtitle">Cryptographic Evidence & Document Security Pipeline</p>
+                </div>
+            </div>
+
+            <div class="header-status-panel">
+                <div class="status-indicator-pill" id="backendStatusPill">
+                    <span class="status-dot pulsing"></span>
+                    <span id="backendStatusText">Checking Backend...</span>
+                </div>
+                <select id="backendPortSelect" class="port-select" title="Backend Server Port">
+                    <option value="8082" selected>Port 8082</option>
+                    <option value="8080">Port 8080</option>
+                </select>
+                <button class="btn btn-secondary btn-xs" id="btnResetSystem" title="Clear all documents & database back to DOC-1001" style="color: #f87171; border-color: rgba(248, 113, 113, 0.3);">
+                    Clear DB
+                </button>
+                <div class="crypto-pills">
+                    <span class="crypto-chip" title="Digital Signature Scheme">RSA-PSS</span>
+                    <span class="crypto-chip" title="Envelope Encryption Master Key">KEK / DEK</span>
+                    <span class="crypto-chip" title="Integrity Hash">SHA-256</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs" role="tablist">
+            <button class="tab-btn active" data-tab="uploadTab" id="tabUploadBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Upload & Pipeline
+            </button>
+            <button class="tab-btn" data-tab="vaultTab" id="tabVaultBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Document Vault
+            </button>
+            <button class="tab-btn" data-tab="auditTab" id="tabAuditBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Audit Trail
+            </button>
+        </nav>
+
+        <!-- Tab 1: Upload & Pipeline Visualizer -->
+        <main class="tab-content active" id="uploadTab">
+            <div class="grid-layout-2col">
+                <!-- Left: Upload Form -->
+                <section class="card glass-card">
+                    <div class="card-header">
+                        <h2>Upload Secure Document</h2>
+                        <span class="card-badge">Phase 0 – 18</span>
+                    </div>
+
+                    <form id="uploadDocForm" class="form-container">
+                        <div class="drop-zone" id="dropZone">
+                            <input type="file" id="fileInput" name="file" class="file-input-hidden" required>
+                            <div class="drop-zone-prompt">
+                                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <line x1="12" y1="18" x2="12" y2="12"/>
+                                    <polyline points="9 15 12 12 15 15"/>
+                                </svg>
+                                <p class="drop-zone-text"><strong>Click to select</strong> or drag and drop file here</p>
+                                <span class="drop-zone-sub">Supported: PDF, DOCX, JPG, PNG, TXT (Max: 100 MB)</span>
+                                <div id="selectedFileInfo" class="selected-file-pill hidden">
+                                    <span id="selectedFileName">FIR_123.pdf</span>
+                                    <span id="selectedFileSize" class="size-badge">582 KB</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="caseId">Case ID</label>
+                                <input type="text" id="caseId" name="caseId" value="CASE-123" placeholder="e.g. CASE-123" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="documentType">Document Type</label>
+                                <select id="documentType" name="documentType">
+                                    <option value="FIR" selected>FIR (First Information Report)</option>
+                                    <option value="EVIDENCE">Evidence Document</option>
+                                    <option value="FORENSIC_REPORT">Forensic Report</option>
+                                    <option value="AFFIDAVIT">Legal Affidavit</option>
+                                    <option value="CHARGE_SHEET">Charge Sheet</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="classification">Classification</label>
+                                <select id="classification" name="classification">
+                                    <option value="CONFIDENTIAL" selected>CONFIDENTIAL</option>
+                                    <option value="RESTRICTED">RESTRICTED</option>
+                                    <option value="TOP_SECRET">TOP SECRET</option>
+                                    <option value="PUBLIC">PUBLIC</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="uploadedBy">Uploaded By (Officer / User)</label>
+                                <input type="text" id="uploadedBy" name="uploadedBy" value="USER-42" placeholder="e.g. USER-42">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" id="btnSubmitUpload">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                            Execute Secure Pipeline & Upload
+                        </button>
+                    </form>
+                </section>
+
+                <!-- Right: Live Pipeline Execution Stepper -->
+                <section class="card glass-card">
+                    <div class="card-header">
+                        <h2>Cryptographic Security Chain</h2>
+                        <span class="card-badge" id="pipelineStatusBadge">Awaiting Upload</span>
+                    </div>
+
+                    <div class="pipeline-stepper" id="pipelineStepper">
+                        <div class="step-item" id="step-validation">
+                            <div class="step-indicator">1</div>
+                            <div class="step-content">
+                                <h4>File Validation</h4>
+                                <p>Size &lt; 100MB, extension & Apache Tika magic-byte MIME check</p>
+                            </div>
+                            <span class="step-badge pending">Pending</span>
+                        </div>
+
+                        <div class="step-item" id="step-malware">
+                            <div class="step-indicator">2</div>
+                            <div class="step-content">
+                                <h4>Malware Scan (ClamAV)</h4>
+                                <p>In-stream antiviral scan + EICAR signature test filter</p>
+                            </div>
+                            <span class="step-badge pending">Pending</span>
+                        </div>
+
+                        <div class="step-item" id="step-hash">
+                            <div class="step-indicator">3</div>
+                            <div class="step-content">
+                                <h4>SHA-256 Digest</h4>
+                                <p>Original plaintext cryptographic hash calculation</p>
+                            </div>
+                            <span class="step-badge pending">Pending</span>
+                        </div>
+
+                        <div class="step-item" id="step-signature">
+                            <div class="step-indicator">4</div>
+                            <div class="step-content">
+                                <h4>Digital Signature</h4>
+                                <p>RSA-PSS 2048-bit digital signature generation</p>
+                            </div>
+                            <span class="step-badge pending">Pending</span>
+                        </div>
+
+                        <div class="step-item" id="step-dek">
+                            <div class="step-indicator">5</div>
+                            <div class="step-content">
+                                <h4>DEK Generation & AES-256-GCM</h4>
+                                <p>Unique 256-bit DEK + 12-byte IV + 128-bit authentication tag</p>
+                            </div>
+                            <span class="step-badge pending">Pending</span>
+                        </div>
+
+                        <div class="step-item" id="step-wrap">
+                            <div class="step-indicator">6</div>
+                            <div class="step-content">
+                                <h4>Envelope Encryption (Wrap DEK)</h4>
+                                <p>DEK wrapped with Master KEK; raw DEK never stored</p>
+                            </div>
+                            <span class="step-badge pending">Pending</span>
+                        </div>
+
+                        <div class="step-item" id="step-storage">
+                            <div class="step-indicator">7</div>
+                            <div class="step-content">
+                                <h4>Storage & Audit Trail</h4>
+                                <p>Encrypted object stored in MinIO/Local + Audit log recorded</p>
+                            </div>
+                            <span class="step-badge pending">Pending</span>
+                        </div>
+                    </div>
+
+                    <!-- Security Verification Card (Matching Phase 25 Mockup) -->
+                    <div id="securityVerificationCard" class="security-card hidden">
+                        <div class="sec-card-header">
+                            <h3 id="secCardTitle">FIR_123.pdf</h3>
+                            <span class="sec-card-tag" id="secCardVersion">v1</span>
+                        </div>
+                        <div class="sec-card-table">
+                            <div class="sec-row"><span>Malware Scan</span><strong class="text-green">✓ CLEAN</strong></div>
+                            <div class="sec-row"><span>SHA-256</span><strong class="text-green">✓ VERIFIED</strong></div>
+                            <div class="sec-row"><span>Digital Signature</span><strong class="text-green">✓ VALID (RSA-PSS)</strong></div>
+                            <div class="sec-row"><span>Encryption</span><strong class="text-green">✓ AES-256-GCM</strong></div>
+                            <div class="sec-row"><span>DEK Status</span><strong class="text-green">✓ PROTECTED (Wrapped)</strong></div>
+                            <div class="sec-row"><span>Storage</span><strong class="text-cyan" id="secCardStorage">✓ STORED</strong></div>
+                            <div class="sec-row"><span>Integrity</span><strong class="text-green">✓ VERIFIED</strong></div>
+                        </div>
+                        <div class="sec-card-footer">
+                            <span class="hash-label">SHA-256:</span>
+                            <code class="hash-code" id="secCardSha256">a4f8c8d...</code>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Tab 2: Document Vault -->
+        <main class="tab-content" id="vaultTab">
+            <section class="card glass-card full-width">
+                <div class="card-header">
+                    <div>
+                        <h2>Encrypted Document Vault</h2>
+                        <p class="subtitle">Access, verify, decrypt and manage version history</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" id="btnRefreshVault">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                        Refresh
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table" id="documentsTable">
+                        <thead>
+                            <tr>
+                                <th>Doc ID</th>
+                                <th>Filename</th>
+                                <th>Case ID</th>
+                                <th>Type</th>
+                                <th>Classification</th>
+                                <th>Version</th>
+                                <th>Uploaded At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="documentsTableBody">
+                            <tr>
+                                <td colspan="8" class="text-center empty-state">No documents in vault. Upload one to start!</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <!-- Tab 3: Audit Trail -->
+        <main class="tab-content" id="auditTab">
+            <section class="card glass-card full-width">
+                <div class="card-header">
+                    <div>
+                        <h2>Tamper-Evident Audit Trail</h2>
+                        <p class="subtitle">Immutable chain of custody for all upload, download, and verification events</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" id="btnRefreshAudit">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                        Refresh Logs
+                    </button>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table" id="auditTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Timestamp</th>
+                                <th>Action</th>
+                                <th>User</th>
+                                <th>Doc ID</th>
+                                <th>Case ID</th>
+                                <th>Result</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="auditTableBody">
+                            <tr>
+                                <td colspan="8" class="text-center empty-state">No audit logs recorded yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <!-- Version Upload Modal -->
+        <div class="modal-overlay hidden" id="versionModal">
+            <div class="modal-content glass-card" style="max-width: 520px;">
+                <div class="modal-header">
+                    <h3>Upload New Version (<span id="modalDocId" class="text-cyan">DOC-1001</span>)</h3>
+                    <button class="btn-close" id="btnCloseVersionModal">&times;</button>
+                </div>
+                <form id="versionUploadForm" class="form-container">
+                    <div class="version-target-card" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.15); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span class="text-muted" style="font-size: 0.82rem;">Target Document:</span>
+                            <strong id="modalDocFilename" class="text-cyan" style="font-size: 0.88rem; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">filename.txt</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span class="text-muted" style="font-size: 0.82rem;">Version Transition:</span>
+                            <span id="modalVersionTransition" class="badge-tag">v1 &rarr; v2</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span class="text-muted" style="font-size: 0.82rem;">Enforced Format:</span>
+                            <span class="crypto-chip" id="modalRequiredTypeChip" style="background: rgba(6, 182, 212, 0.15); border-color: rgba(6, 182, 212, 0.4); color: #22d3ee; font-weight: 600;">Type Lock: .TXT</span>
+                        </div>
+                    </div>
+
+                    <div id="versionErrorAlert" class="alert-error hidden" style="margin-bottom: 14px; padding: 10px 14px; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.4); border-radius: 8px; font-size: 0.82rem; color: #fb7185; line-height: 1.4;"></div>
+
+                    <p class="text-muted" style="font-size: 0.78rem; margin-bottom: 14px;">
+                        Previous versions remain immutable. The new version must be of the identical file type and will receive a unique DEK, IV, RSA-PSS signature, and audit log.
+                    </p>
+
+                    <div class="form-group">
+                        <label for="versionFileInput">Select Modified Document</label>
+                        <input type="file" id="versionFileInput" required>
+                        <small class="form-hint text-muted" id="versionFileHint" style="display: block; margin-top: 4px; font-size: 0.75rem;">Selected file must match the original document's file extension.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="versionUploadedBy">Editor User ID</label>
+                        <input type="text" id="versionUploadedBy" value="OFFICER-2" required>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-secondary" id="btnCancelVersionModal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="btnSubmitVersion">Commit Version &amp; Run Security Chain</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Verification Detail Modal -->
+        <div class="modal-overlay hidden" id="verifyModal">
+            <div class="modal-content glass-card">
+                <div class="modal-header">
+                    <h3>Document Cryptographic Audit</h3>
+                    <button class="btn-close" id="btnCloseVerifyModal">&times;</button>
+                </div>
+                <div id="verifyModalBody">
+                    <!-- Dynamic verification details populated by app.js -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
