@@ -59,7 +59,10 @@ public class MinioStorageService implements StorageService {
         }
     }
 
-    public boolean isConnected() {
+    public synchronized boolean isConnected() {
+        if (!connected && enabled) {
+            init();
+        }
         return connected;
     }
 

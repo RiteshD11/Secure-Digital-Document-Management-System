@@ -1,0 +1,152 @@
+#include<iostream>
+#include<vector>
+using namespace std;
+
+void First_Fit(vector<int>process, vector<int>memory_block){
+	int n = process.size();
+	int m = memory_block.size();
+	vector<int>allocated;
+	for(int i=0;i<n;i++){
+		int ind = -1;
+		
+		for(int j=0;j<m;j++){
+			 if(process[i]<=memory_block[j]){
+				ind = j;
+				memory_block[j] -= process[i];				
+				break;
+				
+			}
+			
+		}
+		allocated.push_back(ind);
+		
+	}
+	
+	cout << "Process No.\tProcess Size\tBlock No.\n";
+    for (int i = 0; i < n; i++) {
+        cout << i + 1 << "\t\t" << process[i] << "\t\t";
+        if (allocated[i] != -1) cout << allocated[i] + 1;
+        else cout << "Not Allocated";
+        cout << endl;
+    }
+	cout<<endl;
+	
+	int total_fragmentation=0;
+	for(int i=0;i<m;i++){
+		total_fragmentation += memory_block[i];
+	}
+	cout<<total_fragmentation<<endl;
+}
+
+
+
+void Next_Fit(vector<int> process, vector<int> memory_block) {
+    int n = process.size();
+    int m = memory_block.size();
+    vector<int> allocation(n, -1);
+    
+
+    int last_index = 0;
+
+    for (int i = 0; i < n; i++) {
+        int count = 0;
+        
+      
+        while (count < m) {
+            int current_block = (last_index + count) % m; 
+            
+            if (memory_block[current_block] >= process[i]) {
+                allocation[i] = current_block;
+                memory_block[current_block] -= process[i]; 
+               
+                last_index = (current_block+1)%m; 
+                break;
+            }
+            count++;
+        }
+
+    }
+
+    cout << "Process No.\tProcess Size\tBlock No.\n";
+    for (int i = 0; i < n; i++) {
+        cout << i + 1 << "\t\t" << process[i] << "\t\t";
+        if (allocation[i] != -1) cout << allocation[i] + 1;
+        else cout << "Not Allocated";
+        cout << endl;
+    }
+}
+int main(){
+	vector<int> process={90,50,30,40};
+	vector<int> memory_block = {20,100,40,200,10};
+	
+	First_Fit(process, memory_block);
+
+	Next_Fit(process, memory_block);
+}#include <iostream>
+#include <fcntl.h> // Provides file control options like O_RDONLY, O_WRONLY, O_CREAT, etc.    open()
+#include <unistd.h> // For System Calls: read(), write(), close()
+#include <sys/stat.h> // For file permissions (mode). (e.g., S_IRUSR, S_IWUSR).
+#include <cstdlib> // Provides exit() and constants like EXIT_FAILURE.
+#include <cerrno> // Used for error handling (though not directly used here, helpful with perror()).
+#define BUFFER_SIZE 1024 // Define a buffer size for efficient copying
+void copy_file(const char* source_path, const char* dest_path) {
+int source_fd, dest_fd;
+ssize_t bytes_read, bytes_written;
+char buffer[BUFFER_SIZE];
+// 1. Open the source file in read-only mode
+// O_RDONLY is the flag for read-only access
+source_fd = open(source_path, O_RDONLY);
+if (source_fd == -1) {
+perror("Error opening source file");
+
+exit(EXIT_FAILURE);
+}
+// 2. Open (or create) the destination file in write-only mode
+// O_CREAT: Create file if it doesn't exist
+// O_WRONLY: Open for writing only
+// 0644: Permissions for the new file (read/write for owner, read for group/others)
+dest_fd = open(dest_path, O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+if (dest_fd == -1) {
+perror("Error opening destination file");
+close(source_fd); // Close source file before exiting
+exit(EXIT_FAILURE);
+}
+// 3. Read from source and write to destination in a loop
+while ((bytes_read = read(source_fd, buffer, BUFFER_SIZE)) > 0) {
+bytes_written = write(dest_fd, buffer, bytes_read);
+if (bytes_written != bytes_read) {
+perror("Error writing to destination file");
+close(source_fd);
+close(dest_fd);
+exit(EXIT_FAILURE);
+}
+}
+if (bytes_read == -1) {
+perror("Error reading from source file");
+close(source_fd);
+close(dest_fd);
+
+exit(EXIT_FAILURE);
+}
+// 4. Close both files
+if (close(source_fd) == -1) {
+perror("Error closing source file");
+exit(EXIT_FAILURE);
+}
+if (close(dest_fd) == -1) {
+perror("Error closing destination file");
+exit(EXIT_FAILURE);
+}
+std::cout << "File copied successfully from " << source_path << " to " << dest_path << std::endl;
+}
+int main(int argc, char* argv[]) {
+// The program requires command line arguments for source and destination file names
+if (argc != 3) {
+std::cerr << "Usage: " << argv[0] << " <source_file> <destination_file>" << std::endl;
+return EXIT_FAILURE;
+}
+copy_file(argv[1], argv[2]);
+return EXIT_SUCCESS;
+}Hello
+Hi
+I am concatinating Hi to merged.txt
