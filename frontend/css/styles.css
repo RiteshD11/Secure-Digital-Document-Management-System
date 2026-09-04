@@ -868,3 +868,371 @@ body {
     to { transform: rotate(360deg); }
 }
 .text-center { text-align: center; }
+
+/* ----------------------------------------------------
+   SIGNUP PROFILE PHOTO SECTION STYLING
+---------------------------------------------------- */
+.profile-photo-section {
+    margin: 20px 0 16px 0;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    transition: all 0.25s ease;
+}
+
+.profile-photo-section:hover {
+    border-color: rgba(0, 242, 254, 0.25);
+}
+
+.photo-section-header {
+    margin-bottom: 12px;
+}
+
+.photo-section-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.photo-section-subtitle {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.photo-options-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+@media (max-width: 500px) {
+    .photo-options-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.photo-option-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 12px;
+    background: rgba(17, 24, 39, 0.6);
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    gap: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.photo-option-btn:hover {
+    border-color: var(--accent-cyan);
+    background: rgba(0, 242, 254, 0.06);
+    color: var(--accent-cyan);
+    transform: translateY(-1px);
+}
+
+.photo-option-btn svg {
+    color: var(--accent-cyan);
+    transition: transform 0.2s ease;
+}
+
+.photo-option-btn:hover svg {
+    transform: scale(1.1);
+}
+
+/* Camera Live Feed View */
+.camera-feed-container {
+    position: relative;
+    background: #000;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.camera-video-element {
+    width: 100%;
+    max-height: 280px;
+    object-fit: cover;
+    transform: scaleX(-1); /* Mirror view for natural self-capture */
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.camera-overlay-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.65);
+    border: 1px solid rgba(244, 63, 94, 0.5);
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--accent-rose);
+    backdrop-filter: blur(8px);
+}
+
+.camera-rec-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-rose);
+    animation: recBlink 1.2s infinite ease-in-out;
+}
+
+@keyframes recBlink {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.3; transform: scale(0.85); }
+}
+
+.camera-controls-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(17, 24, 39, 0.95);
+    border-top: 1px solid var(--border-color);
+}
+
+/* Photo Preview Box */
+.photo-preview-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px;
+    background: rgba(17, 24, 39, 0.7);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    gap: 12px;
+}
+
+.photo-preview-image-wrap {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--accent-cyan);
+    box-shadow: 0 0 15px var(--accent-cyan-glow);
+}
+
+.photo-preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photo-confirmed-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: var(--accent-emerald);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.photo-pending-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: var(--accent-amber);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.photo-action-buttons {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    justify-content: center;
+}
+
+/* ----------------------------------------------------
+   FACE AUTHENTICATION SIGN-IN STYLING
+---------------------------------------------------- */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    margin: 18px 0;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.auth-divider span {
+    padding: 0 12px;
+}
+
+.face-auth-card {
+    background: rgba(17, 24, 39, 0.75);
+    border: 1px solid rgba(0, 242, 254, 0.25);
+    border-radius: var(--radius-md);
+    padding: 20px 16px;
+    box-shadow: 0 0 25px rgba(0, 242, 254, 0.1);
+    animation: fadeIn 0.25s ease;
+}
+
+.face-auth-header {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.face-auth-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.face-auth-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.face-verifying-banner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    gap: 12px;
+    background: rgba(0, 242, 254, 0.05);
+    border: 1px solid rgba(0, 242, 254, 0.2);
+    border-radius: var(--radius-md);
+    text-align: center;
+}
+
+.face-scan-pulse {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-cyan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-cyan);
+    animation: pulseRing 1.5s infinite;
+}
+
+@keyframes pulseRing {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 242, 254, 0.6);
+    }
+    70% {
+        box-shadow: 0 0 0 16px rgba(0, 242, 254, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 242, 254, 0);
+    }
+}
+
+/* ----------------------------------------------------
+   3-STEP MFA SIGN-IN STEPPER STYLING
+---------------------------------------------------- */
+.mfa-stepper-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 10px 14px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+}
+
+.mfa-step-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+}
+
+.mfa-step-item.active {
+    color: var(--accent-cyan);
+}
+
+.mfa-step-item.completed {
+    color: var(--accent-emerald);
+}
+
+.mfa-step-badge {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-family: var(--font-mono);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+}
+
+.mfa-step-item.active .mfa-step-badge {
+    background: rgba(0, 242, 254, 0.15);
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+    box-shadow: 0 0 8px var(--accent-cyan-glow);
+}
+
+.mfa-step-item.completed .mfa-step-badge {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: var(--accent-emerald);
+    color: var(--accent-emerald);
+}
+
+.mfa-step-divider {
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+    margin: 0 6px;
+}
+
+.mfa-step-divider.active {
+    background: var(--accent-emerald);
+}
+
+

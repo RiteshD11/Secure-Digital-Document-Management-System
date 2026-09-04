@@ -48,9 +48,8 @@ public class otpService {
         Map<String,String> response=new HashMap<>();
         if(otps.containsKey(mail) && otps.get(mail).equals(otp)){
             otps.remove(mail);
-            String token=jwtSerive.generateAccessToekn(registerService.getSingleUser(mail));
             response.put("status","success");
-            response.put("token",token);
+            response.put("message","OTP verified successfully. Proceed to face authentication.");
             return response;
         }
 
