@@ -12,4 +12,17 @@ public interface FaceVerificationService {
      * @return FaceVerificationResult indicating MATCH or NO_MATCH with confidence score.
      */
     FaceVerificationResult verifyFace(byte[] referencePhoto, byte[] livePhoto);
+
+    /**
+     * Verifies face with optional userId for external FastAPI AI service biometric verification.
+     *
+     * @param userId         User identifier (username or email).
+     * @param referencePhoto Binary byte array of reference photo.
+     * @param livePhoto      Binary byte array of live photo.
+     * @return FaceVerificationResult.
+     */
+    default FaceVerificationResult verifyFace(String userId, byte[] referencePhoto, byte[] livePhoto) {
+        return verifyFace(referencePhoto, livePhoto);
+    }
 }
+
