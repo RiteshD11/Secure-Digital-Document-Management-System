@@ -39,6 +39,10 @@ public class authRequests {
     @Autowired
     private authUtl jwtService;
 
+    @Autowired(required = false)
+    private com.security_management.backend.service.FastApiService fastApiService;
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(authRequests.class);
 
     @PostMapping("/verifyLogin-otp")
 
@@ -113,7 +117,20 @@ public class authRequests {
             us.setProfileImage(photo.getBytes());
         }
 
-        return setprifileService.setprofile(us);
+        user savedUser = setprifileService.setprofile(us);
+
+        // Forward original profile photo and userId to FastAPI for AI biometric registration & storage
+        if (photo != null && !photo.isEmpty() && fastApiService != null) {
+            try {
+                log.info("Forwarding original profile photo and userId '{}' to FastAPI biometric storage...", username);
+                fastApiService.registerFace(username, photo);
+                log.info("Successfully registered profile photo in FastAPI for userId: {}", username);
+            } catch (Exception e) {
+                log.warn("FastAPI face registration call failed during signup for user {}: {}. Profile is saved in database.", username, e.getMessage());
+            }
+        }
+
+        return savedUser;
     }
 
     @PostMapping(value = "/set-profile", consumes = org.springframework.http.MediaType.APPLICATION_JSON_VALUE)
@@ -179,7 +196,7 @@ public class authRequests {
         try {
             byte[] liveBytes = livePhoto.getBytes();
             com.security_management.backend.dto.FaceVerificationResult result =
-                    faceVerificationService.verifyFace(us.getProfileImage(), liveBytes);
+                    faceVerificationService.verifyFace(us.getUsername(), us.getProfileImage(), liveBytes);
 
             if (result.isMatched()) {
                 String token = jwtService.generateAccessToekn(us);
