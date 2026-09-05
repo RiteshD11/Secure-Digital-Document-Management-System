@@ -108,6 +108,14 @@
 		</dependency>
 
 
+<!--        Code for the minio configuration adding   -->
+
+		<dependency>
+			<groupId>io.minio</groupId>
+			<artifactId>minio</artifactId>
+			<version>9.0.1</version>
+		</dependency>
+
 
 
 	</dependencies>
