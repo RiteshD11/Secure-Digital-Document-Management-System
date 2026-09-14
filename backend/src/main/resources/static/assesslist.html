@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Assessment List</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Security Management</p>
+          <h1>Assessment List</h1>
+        </div>
+        <button id="refreshBtn" class="primary-btn">Refresh data</button>
+      </header>
+
+      <section class="summary-grid" id="summaryGrid">
+        <article class="summary-card">
+          <span class="label">Total cases</span>
+          <strong id="totalCases">0</strong>
+        </article>
+        <article class="summary-card">
+          <span class="label">Total documents</span>
+          <strong id="totalDocuments">0</strong>
+        </article>
+        <article class="summary-card">
+          <span class="label">Open status</span>
+          <strong id="openCases">0</strong>
+        </article>
+        <article class="summary-card accent">
+          <span class="label">Summary</span>
+          <strong id="summaryText">Loading...</strong>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Cases</h2>
+          <input id="caseSearch" type="search" placeholder="Search case number or title" />
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Case No</th>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Created By</th>
+                <th>Created At</th>
+              </tr>
+            </thead>
+            <tbody id="casesTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Documents</h2>
+          <input id="documentSearch" type="search" placeholder="Search document or type" />
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Document ID</th>
+                <th>Case ID</th>
+                <th>Type</th>
+                <th>Classification</th>
+                <th>Uploaded By</th>
+                <th>Uploaded At</th>
+              </tr>
+            </thead>
+            <tbody id="documentsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

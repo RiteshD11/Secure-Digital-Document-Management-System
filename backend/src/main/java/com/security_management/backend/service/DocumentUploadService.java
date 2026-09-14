@@ -1,6 +1,7 @@
 package com.security_management.backend.service;
 
 import com.security_management.backend.audit.AuditService;
+import com.security_management.backend.dto.DocumentAccessGrantRequest;
 import com.security_management.backend.dto.UploadDocumentResponse;
 import com.security_management.backend.encryption.EncryptionService;
 import com.security_management.backend.encryption.KeyManagementService;
@@ -44,6 +45,7 @@ public class DocumentUploadService {
     private final DocumentRepository documentRepository;
     private final DocumentVersionRepository documentVersionRepository;
     private final AuditService auditService;
+    private final DocumentAccessService documentAccessService;
 
     @Autowired
     public DocumentUploadService(FileValidationService fileValidationService,
@@ -55,7 +57,8 @@ public class DocumentUploadService {
                                  StorageService storageService,
                                  DocumentRepository documentRepository,
                                  DocumentVersionRepository documentVersionRepository,
-                                 AuditService auditService) {
+                                 AuditService auditService,
+                                 DocumentAccessService documentAccessService) {
         this.fileValidationService = fileValidationService;
         this.malwareScanService = malwareScanService;
         this.hashService = hashService;
@@ -66,6 +69,7 @@ public class DocumentUploadService {
         this.documentRepository = documentRepository;
         this.documentVersionRepository = documentVersionRepository;
         this.auditService = auditService;
+        this.documentAccessService = documentAccessService;
     }
 
     @jakarta.annotation.PostConstruct
@@ -189,6 +193,15 @@ public class DocumentUploadService {
 
             documentRepository.save(document);
             documentVersionRepository.save(documentVersion);
+
+            Integer grantedUserId = documentAccessService.resolveUserId(effectiveUserId);
+            if (grantedUserId != null) {
+                DocumentAccessGrantRequest accessRequest = new DocumentAccessGrantRequest();
+                accessRequest.setUserId(grantedUserId);
+                accessRequest.setPermission(com.security_management.backend.entity.accessList.DocumentPermission.DELETE);
+                accessRequest.setGrantedBy(effectiveUserId);
+                documentAccessService.grantAccess(documentId, accessRequest, effectiveUserId, ipAddress);
+            }
 
             // Step 9: Audit Logging
             auditService.logEvent(

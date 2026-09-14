@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -49,6 +50,11 @@ public class GlobalExceptionHandler {
     })
     public ResponseEntity<Map<String, Object>> handleBadCredentials(Exception ex) {
         return buildResponse(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Invalid email or password.");
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Map<String, Object>> handleResponseStatus(ResponseStatusException ex) {
+        return buildResponse(HttpStatus.valueOf(ex.getStatusCode().value()), "HTTP_ERROR", ex.getReason() != null ? ex.getReason() : "Request failed");
     }
 
     @ExceptionHandler(Exception.class)

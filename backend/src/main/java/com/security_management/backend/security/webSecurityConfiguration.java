@@ -48,7 +48,7 @@ public class webSecurityConfiguration {
                         .requestMatchers("/api/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").permitAll()
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(applicationContext.getBean(jwtFilter.class), UsernamePasswordAuthenticationFilter.class)

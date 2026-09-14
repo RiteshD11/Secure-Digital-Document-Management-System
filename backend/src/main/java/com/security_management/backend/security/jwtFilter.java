@@ -1,8 +1,8 @@
 package com.security_management.backend.security;
 
 
-import com.security_management.backend.serivice.authUtl;
-import com.security_management.backend.serivice.userDetailSevice;
+import com.security_management.backend.service.authUtl;
+import com.security_management.backend.service.userDetailSevice;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
