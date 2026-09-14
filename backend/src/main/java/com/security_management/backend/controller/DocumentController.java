@@ -20,8 +20,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -49,6 +51,7 @@ public class DocumentController {
     private final AuditLogRepository auditLogRepository;
     private final AuditService auditService;
     private final StorageService storageService;
+    private final com.security_management.backend.service.DocumentAccessService documentAccessService;
 
     @Autowired
     public DocumentController(DocumentUploadService documentUploadService,
@@ -58,7 +61,8 @@ public class DocumentController {
                               DocumentVersionRepository documentVersionRepository,
                               AuditLogRepository auditLogRepository,
                               AuditService auditService,
-                              StorageService storageService) {
+                              StorageService storageService,
+                              com.security_management.backend.service.DocumentAccessService documentAccessService) {
         this.documentUploadService = documentUploadService;
         this.documentDownloadService = documentDownloadService;
         this.documentVerificationService = documentVerificationService;
@@ -67,6 +71,7 @@ public class DocumentController {
         this.auditLogRepository = auditLogRepository;
         this.auditService = auditService;
         this.storageService = storageService;
+        this.documentAccessService = documentAccessService;
     }
 
     /**
@@ -137,6 +142,12 @@ public class DocumentController {
             HttpServletRequest request) {
 
         String clientIp = request.getRemoteAddr();
+
+        boolean authorized = documentAccessService.checkAccess(documentId, userId, com.security_management.backend.entity.accessList.DocumentPermission.DOWNLOAD);
+        if (!authorized) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is not authorized to download this document.");
+        }
+
         DocumentDownloadService.DecryptedDocument doc = documentDownloadService
                 .downloadAndDecrypt(documentId, version, userId, clientIp);
 
