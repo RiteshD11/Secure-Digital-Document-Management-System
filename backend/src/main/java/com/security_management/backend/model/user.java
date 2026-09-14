@@ -35,11 +35,9 @@ public class user {
     @NotNull
     private String phoneNumber;
 
+    // @NotNull
     @Lob // large object
+    @Column(name = "profile_image", columnDefinition = "LONGBLOB")
     private byte[] profileImage;
-
-
-
-
 
 }
