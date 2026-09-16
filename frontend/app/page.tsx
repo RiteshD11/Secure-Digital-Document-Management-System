@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { authApi, docApi, BACKEND_URL } from '../src/services/api'
+import { authApi, caseApi, docApi, BACKEND_URL } from '../src/services/api'
 import {
   Shield,
   Lock,
@@ -30,6 +30,17 @@ import {
   Image as ImageIcon,
   ScanFace
 } from 'lucide-react'
+
+interface CaseItem {
+  caseId?: number
+  case_number: string
+  title: string
+  description?: string
+  status?: string
+  created_by?: string
+  createdAt?: string
+  lastUpdate?: string
+}
 
 interface DocumentItem {
   id: string
@@ -101,13 +112,13 @@ export default function App() {
   const [regNotice, setRegNotice] = useState<{ type: 'error' | 'success'; message: string } | null>(null)
 
   // Dashboard Main States
-  const [activeTab, setActiveTab] = useState<'upload' | 'vault' | 'audit'>('upload')
+  const [activeTab, setActiveTab] = useState<'upload' | 'vault' | 'audit' | 'access'>('upload')
   const [backendOnline, setBackendOnline] = useState<boolean>(true)
   const [backendPort, setBackendPort] = useState<string>('8082')
 
   // Upload Form States
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [caseId, setCaseId] = useState('CASE-123')
+  const [caseId, setCaseId] = useState('')
   const [docType, setDocType] = useState('FIR')
   const [classification, setClassification] = useState('CONFIDENTIAL')
   const [uploadedBy, setUploadedBy] = useState('OFFICER-42')
@@ -121,6 +132,13 @@ export default function App() {
   const [searchVault, setSearchVault] = useState('')
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([])
   const [auditLoading, setAuditLoading] = useState(false)
+  const [cases, setCases] = useState<CaseItem[]>([])
+  const [casesLoading, setCasesLoading] = useState(false)
+  const [caseSearch, setCaseSearch] = useState('')
+  const [newCaseNumber, setNewCaseNumber] = useState('')
+  const [newCaseTitle, setNewCaseTitle] = useState('')
+  const [newCaseDescription, setNewCaseDescription] = useState('')
+  const [caseCreating, setCaseCreating] = useState(false)
 
   // Modals
   const [versionModalOpen, setVersionModalOpen] = useState(false)
@@ -184,6 +202,7 @@ export default function App() {
     if (isAuthenticated) {
       loadDocuments()
       loadAuditLogs()
+      loadCases()
     }
   }, [isAuthenticated])
 
@@ -211,6 +230,41 @@ export default function App() {
     }
   }
 
+  const loadCases = async () => {
+    setCasesLoading(true)
+    try {
+      const data = await caseApi.getAll()
+      setCases(data || [])
+    } catch (e: any) {
+      showToast('Could not load assessment cases: ' + e.message, 'error')
+    } finally {
+      setCasesLoading(false)
+    }
+  }
+
+  const handleCreateCase = async (event: React.FormEvent) => {
+    event.preventDefault()
+    setCaseCreating(true)
+
+    try {
+      await caseApi.create({
+        caseNumber: newCaseNumber.trim(),
+        title: newCaseTitle.trim(),
+        description: newCaseDescription.trim(),
+        createdBy: currentUser?.username || uploadedBy || 'OFFICER-42'
+      })
+      setNewCaseNumber('')
+      setNewCaseTitle('')
+      setNewCaseDescription('')
+      await loadCases()
+      showToast('Case created successfully.', 'success')
+    } catch (e: any) {
+      showToast(e.message || 'Could not create case.', 'error')
+    } finally {
+      setCaseCreating(false)
+    }
+  }
+
   // AUTH ACTIONS
   const handleLoginPassword = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -221,7 +275,7 @@ export default function App() {
     setLoginLoading(true)
     setLoginError(null)
     try {
-      await authApi.login(loginUsername, loginPassword)
+      await authApi.login(loginUsername.trim(), loginPassword)
       setLoginStep('otp')
       showToast('Login OTP sent to your registered email.', 'info')
     } catch (err: any) {
@@ -592,6 +646,7 @@ export default function App() {
     }
 
     setPipelineRunning(true)
+    setCurrentPipelineStep(0)
     setUploadSuccessResult(null)
 
     // Run stepped visualizer
@@ -613,6 +668,7 @@ export default function App() {
       loadDocuments()
       loadAuditLogs()
     } catch (err: any) {
+      setCurrentPipelineStep(-1)
       showToast('Upload failed: ' + err.message, 'error')
     } finally {
       setPipelineRunning(false)
@@ -1307,14 +1363,14 @@ export default function App() {
             <h1 className="brand-title">
               Secure DMS <span className="badge-tag">AES-256-GCM</span>
             </h1>
-            <p className="brand-subtitle">Cryptographic Evidence &amp; Document Security Pipeline</p>
+            <p className="brand-subtitle">Evidence intake, verification, and audit-ready document security</p>
           </div>
         </div>
 
         <div className="header-status-panel">
           <div className="status-indicator-pill">
             <span className={`status-dot ${backendOnline ? 'online' : 'offline'} pulsing`}></span>
-            <span>{backendOnline ? 'Backend Online (Port 8082)' : 'Backend Offline'}</span>
+            <span>{backendOnline ? `Backend Online (Port ${backendPort})` : 'Backend Offline'}</span>
           </div>
 
           <div className="crypto-pills">
@@ -1367,7 +1423,18 @@ export default function App() {
         >
           <FileText size={18} /> Audit Trail ({auditLogs.length})
         </button>
+        <button
+          className={`tab-btn ${activeTab === 'access' ? 'active' : ''}`}
+          onClick={() => { setActiveTab('access'); loadCases(); loadDocuments(); }}
+        >
+          <Briefcase size={18} /> Access List ({cases.length})
+        </button>
       </nav>
+
+      <div className="dashboard-alert">
+        <Shield size={16} />
+        <span>Secure intake pipeline is active: files are validated, scanned, signed, stored, and audited.</span>
+      </div>
 
       {/* ----------------------------------------------------
           TAB 1: UPLOAD & PIPELINE
@@ -1413,13 +1480,20 @@ export default function App() {
                 <div className="form-row">
                   <div className="form-group">
                     <label>Case ID</label>
-                    <input
-                      type="text"
+                    <select
                       value={caseId}
                       onChange={e => setCaseId(e.target.value)}
-                      placeholder="e.g. CASE-123"
                       required
-                    />
+                    >
+                      <option value="" disabled>
+                        {casesLoading ? 'Loading authorized cases...' : 'Select an authorized case'}
+                      </option>
+                      {cases.map(item => (
+                        <option key={item.case_number} value={item.case_number}>
+                          {item.case_number} - {item.title}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div className="form-group">
                     <label>Document Type</label>
@@ -1655,7 +1729,154 @@ export default function App() {
       )}
 
       {/* ----------------------------------------------------
-          TAB 3: AUDIT TRAIL
+          TAB 3: ASSESSMENT / ACCESS LIST
+          ---------------------------------------------------- */}
+      {activeTab === 'access' && (
+        <main className="tab-content active">
+          <section className="card full-width">
+            <div className="card-header">
+              <div>
+                <h2>Assessment Access List</h2>
+                <p className="subtitle">Review case ownership, status, and associated secure documents</p>
+              </div>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  placeholder="Search case number or title..."
+                  value={caseSearch}
+                  onChange={e => setCaseSearch(e.target.value)}
+                  style={{ padding: '6px 12px', borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: '#fff', fontSize: '0.85rem' }}
+                />
+                <button className="btn btn-secondary btn-sm" onClick={() => { loadCases(); loadDocuments(); }} disabled={casesLoading}>
+                  <RefreshCw size={14} className={casesLoading ? 'spin' : ''} /> Refresh
+                </button>
+              </div>
+            </div>
+
+            <div className="summary-strip">
+              <div className="summary-strip-item">
+                <span>Total Cases</span>
+                <strong>{cases.length}</strong>
+              </div>
+              <div className="summary-strip-item">
+                <span>Open Cases</span>
+                <strong>{cases.filter(item => String(item.status || '').toLowerCase() !== 'closed').length}</strong>
+              </div>
+              <div className="summary-strip-item">
+                <span>Secure Documents</span>
+                <strong>{documents.length}</strong>
+              </div>
+            </div>
+
+            <form onSubmit={handleCreateCase} className="case-create-panel">
+              <div className="case-create-heading">
+                <div>
+                  <h3>Create New Case</h3>
+                  <p>Register a case before uploading its secure documents.</p>
+                </div>
+                <span className="card-badge">Created by {currentUser?.username || uploadedBy || 'Officer'}</span>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="new-case-number">Case Number</label>
+                  <input
+                    id="new-case-number"
+                    type="text"
+                    value={newCaseNumber}
+                    onChange={e => setNewCaseNumber(e.target.value)}
+                    placeholder="e.g. CASE-2026-001"
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="new-case-title">Case Title</label>
+                  <input
+                    id="new-case-title"
+                    type="text"
+                    value={newCaseTitle}
+                    onChange={e => setNewCaseTitle(e.target.value)}
+                    placeholder="e.g. Digital fraud investigation"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="form-group">
+                <label htmlFor="new-case-description">Description</label>
+                <textarea
+                  id="new-case-description"
+                  value={newCaseDescription}
+                  onChange={e => setNewCaseDescription(e.target.value)}
+                  placeholder="Add a short description of this case"
+                  rows={3}
+                />
+              </div>
+              <button type="submit" className="btn btn-primary" disabled={caseCreating}>
+                <Plus size={16} />
+                {caseCreating ? 'Creating case...' : 'Create Case'}
+              </button>
+            </form>
+
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Case No</th>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Created By</th>
+                    <th>Documents</th>
+                    <th>Last Updated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cases.filter(item => {
+                    const query = caseSearch.trim().toLowerCase()
+                    return `${item.case_number} ${item.title}`.toLowerCase().includes(query)
+                  }).length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="empty-state">
+                        {casesLoading ? 'Loading assessment list...' : 'No matching cases found.'}
+                      </td>
+                    </tr>
+                  ) : (
+                    cases.filter(item => {
+                      const query = caseSearch.trim().toLowerCase()
+                      return `${item.case_number} ${item.title}`.toLowerCase().includes(query)
+                    }).map(item => {
+                      const relatedDocuments = documents.filter(document => document.caseId === item.case_number).length
+                      const status = item.status || 'OPEN'
+                      return (
+                        <tr key={item.caseId || item.case_number}>
+                          <td style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)', fontWeight: 600 }}>
+                            {item.case_number}
+                          </td>
+                          <td>
+                            <strong>{item.title}</strong>
+                            {item.description && <div className="table-secondary-text">{item.description}</div>}
+                          </td>
+                          <td>
+                            <span className={`step-badge ${String(status).toLowerCase() === 'closed' ? 'failed' : 'success'}`}>
+                              {status}
+                            </span>
+                          </td>
+                          <td>{item.created_by || '-'}</td>
+                          <td><span className="card-badge">{relatedDocuments} linked</span></td>
+                          <td style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                            {item.lastUpdate || item.createdAt ? new Date(item.lastUpdate || item.createdAt || '').toLocaleString() : '-'}
+                          </td>
+                        </tr>
+                      )
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </main>
+      )}
+
+      {/* ----------------------------------------------------
+          TAB 4: AUDIT TRAIL
           ---------------------------------------------------- */}
       {activeTab === 'audit' && (
         <main className="tab-content active">

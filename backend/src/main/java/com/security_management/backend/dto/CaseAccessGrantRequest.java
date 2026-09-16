@@ -1,0 +1,14 @@
+package com.security_management.backend.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CaseAccessGrantRequest {
+
+    private Integer userId;
+    private String grantedBy;
+}
