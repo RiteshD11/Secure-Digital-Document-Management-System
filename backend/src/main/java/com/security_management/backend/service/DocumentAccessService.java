@@ -2,14 +2,17 @@ package com.security_management.backend.service;
 
 import com.security_management.backend.audit.AuditService;
 import com.security_management.backend.dto.DocumentAccessGrantRequest;
+import com.security_management.backend.dto.DocumentAccessRequestDto;
 import com.security_management.backend.dto.DocumentAccessResponse;
 import com.security_management.backend.entity.Document;
 import com.security_management.backend.entity.accessList.AccessStatus;
 import com.security_management.backend.entity.accessList.DocumentAccess;
 import com.security_management.backend.entity.accessList.DocumentAccessId;
+import com.security_management.backend.entity.accessList.DocumentAccessRequest;
 import com.security_management.backend.entity.accessList.DocumentPermission;
 import com.security_management.backend.model.user;
 import com.security_management.backend.repository.DocumentAccessRepository;
+import com.security_management.backend.repository.DocumentAccessRequestRepository;
 import com.security_management.backend.repository.DocumentRepository;
 import com.security_management.backend.repository.userRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -28,21 +31,86 @@ public class DocumentAccessService {
     private static final Logger log = LoggerFactory.getLogger(DocumentAccessService.class);
 
     private final DocumentAccessRepository documentAccessRepository;
+    private final DocumentAccessRequestRepository documentAccessRequestRepository;
     private final DocumentRepository documentRepository;
     private final userRepository userRepository;
     private final AuditService auditService;
     private final CaseAccessService caseAccessService;
 
     public DocumentAccessService(DocumentAccessRepository documentAccessRepository,
+                                 DocumentAccessRequestRepository documentAccessRequestRepository,
                                  DocumentRepository documentRepository,
                                  userRepository userRepository,
                                  AuditService auditService,
                                  CaseAccessService caseAccessService) {
         this.documentAccessRepository = documentAccessRepository;
+        this.documentAccessRequestRepository = documentAccessRequestRepository;
         this.documentRepository = documentRepository;
         this.userRepository = userRepository;
         this.auditService = auditService;
         this.caseAccessService = caseAccessService;
+    }
+
+    @Transactional
+    public DocumentAccessRequest requestAccess(String documentId, DocumentAccessRequestDto request,
+                                               String requestingUserId) {
+        Document document = documentRepository.findById(documentId)
+                .orElseThrow(() -> new EntityNotFoundException("Document not found: " + documentId));
+        Integer requestedUserId = resolveUserId(requestingUserId);
+        if (requestedUserId == null) {
+            throw new SecurityException("Authenticated user could not be resolved.");
+        }
+        caseAccessService.requireCaseAccess(document.getCaseId(), requestingUserId.toString());
+        if (documentAccessRequestRepository.existsByDocumentIdAndRequestedUserIdAndStatus(
+                documentId, requestedUserId, "PENDING")) {
+            throw new IllegalStateException("A pending access request already exists for this document.");
+        }
+
+        DocumentAccessRequest accessRequest = new DocumentAccessRequest();
+        accessRequest.setDocumentId(documentId);
+        accessRequest.setRequestedUserId(requestedUserId);
+        accessRequest.setRequestedBy(requestingUserId);
+        accessRequest.setPermission(request.getPermission());
+        accessRequest.setReason(request.getReason());
+        accessRequest.setStatus("PENDING");
+        accessRequest.setCreatedAt(LocalDateTime.now());
+        return documentAccessRequestRepository.save(accessRequest);
+    }
+
+    @Transactional(readOnly = true)
+    public List<DocumentAccessRequest> getAccessRequests(String documentId, String requestingUserId) {
+        Document document = documentRepository.findById(documentId)
+                .orElseThrow(() -> new EntityNotFoundException("Document not found: " + documentId));
+        caseAccessService.requireCaseOwner(document.getCaseId(), requestingUserId);
+        return documentAccessRequestRepository.findByDocumentIdOrderByCreatedAtDesc(documentId);
+    }
+
+    @Transactional
+    public DocumentAccessRequest reviewAccessRequest(Long requestId, boolean approved, String reviewedBy,
+                                                     String ipAddress) {
+        DocumentAccessRequest request = documentAccessRequestRepository.findById(requestId)
+                .orElseThrow(() -> new EntityNotFoundException("Document access request not found: " + requestId));
+        if (!"PENDING".equals(request.getStatus())) {
+            throw new IllegalStateException("Document access request has already been reviewed.");
+        }
+
+        Document document = documentRepository.findById(request.getDocumentId())
+                .orElseThrow(() -> new EntityNotFoundException("Document not found: " + request.getDocumentId()));
+        caseAccessService.requireCaseOwner(document.getCaseId(), reviewedBy);
+
+        request.setReviewedBy(reviewedBy);
+        request.setReviewedAt(LocalDateTime.now());
+        request.setStatus(approved ? "APPROVED" : "REJECTED");
+        if (approved) {
+            DocumentAccessGrantRequest grantRequest = new DocumentAccessGrantRequest(
+                    request.getRequestedUserId(), request.getPermission(), null, reviewedBy);
+            grantAccess(request.getDocumentId(), grantRequest, reviewedBy, ipAddress);
+        } else {
+            auditService.logEvent(reviewedBy, request.getDocumentId(), document.getCaseId(),
+                    "ACCESS_REQUEST_REJECTED", "SUCCESS", ipAddress,
+                    "Rejected document access request " + requestId);
+        }
+        return documentAccessRequestRepository.save(request);
     }
 
     @Transactional
