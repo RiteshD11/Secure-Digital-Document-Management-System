@@ -182,26 +182,13 @@ export default function App() {
     }, 4000)
   }
 
-  // Check saved login
+  // Enforce starting at login screen on initial load/refresh
   useEffect(() => {
-    const saved = localStorage.getItem('dms_officer')
-    if (saved) {
-      try {
-        const u = JSON.parse(saved)
-        if (isTokenExpired(u?.token)) {
-          localStorage.removeItem('dms_officer')
-          setCurrentUser(null)
-          setIsAuthenticated(false)
-          showToast('Previous login session expired. Please sign in again.', 'info')
-        } else {
-          setCurrentUser(u)
-          setIsAuthenticated(true)
-          if (u.username) setUploadedBy(u.username)
-        }
-      } catch (e) {
-        localStorage.removeItem('dms_officer')
-      }
-    }
+    localStorage.removeItem('dms_officer')
+    setCurrentUser(null)
+    setIsAuthenticated(false)
+    setLoginStep('credentials')
+    setAuthTab('login')
   }, [])
 
   // Listen for session expiry from any API request
