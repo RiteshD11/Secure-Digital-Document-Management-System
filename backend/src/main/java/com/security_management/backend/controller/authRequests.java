@@ -6,9 +6,7 @@ import com.security_management.backend.dto.loginResponseDto;
 import com.security_management.backend.model.incompleteprofile;
 import com.security_management.backend.model.user;
 
-import com.security_management.backend.serivice.*;
-import com.security_management.backend.serivice.loginService;
-import com.security_management.backend.serivice.registerService;
+import com.security_management.backend.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
