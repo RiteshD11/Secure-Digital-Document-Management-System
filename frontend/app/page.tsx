@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { authApi, caseApi, docApi, BACKEND_URL } from '../src/services/api'
+import { authApi, caseApi, docApi, isTokenExpired, BACKEND_URL } from '../src/services/api'
+import SecureDocumentViewer, { ViewSessionData } from '../components/SecureDocumentViewer'
 import {
   Shield,
   Lock,
@@ -34,6 +35,7 @@ import {
 interface CaseItem {
   caseId?: number
   case_number: string
+  caseNumber?: string
   title: string
   description?: string
   status?: string
@@ -152,6 +154,15 @@ export default function App() {
   const [verifyData, setVerifyData] = useState<any>(null)
   const [verifyLoading, setVerifyLoading] = useState(false)
 
+  // NyayaSetu Secure Document Viewer States
+  const [viewerOpen, setViewerOpen] = useState<boolean>(false)
+  const [viewerDoc, setViewerDoc] = useState<DocumentItem | null>(null)
+  const [viewSessionData, setViewSessionData] = useState<ViewSessionData | null>(null)
+  const [viewBlob, setViewBlob] = useState<Blob | null>(null)
+  const [viewMimeType, setViewMimeType] = useState<string>('application/pdf')
+  const [viewSha256, setViewSha256] = useState<string | undefined>(undefined)
+  const [viewerLoading, setViewerLoading] = useState<boolean>(false)
+
   // Toasts
   const [toasts, setToasts] = useState<Array<{ id: number; message: string; type: 'success' | 'error' | 'info' }>>([])
 
@@ -177,13 +188,31 @@ export default function App() {
     if (saved) {
       try {
         const u = JSON.parse(saved)
-        setCurrentUser(u)
-        setIsAuthenticated(true)
-        if (u.username) setUploadedBy(u.username)
+        if (isTokenExpired(u?.token)) {
+          localStorage.removeItem('dms_officer')
+          setCurrentUser(null)
+          setIsAuthenticated(false)
+          showToast('Previous login session expired. Please sign in again.', 'info')
+        } else {
+          setCurrentUser(u)
+          setIsAuthenticated(true)
+          if (u.username) setUploadedBy(u.username)
+        }
       } catch (e) {
         localStorage.removeItem('dms_officer')
       }
     }
+  }, [])
+
+  // Listen for session expiry from any API request
+  useEffect(() => {
+    const handleExpired = (e: any) => {
+      setCurrentUser(null)
+      setIsAuthenticated(false)
+      showToast(e.detail?.message || 'Session expired. Please sign in again.', 'info')
+    }
+    window.addEventListener('dms_session_expired', handleExpired)
+    return () => window.removeEventListener('dms_session_expired', handleExpired)
   }, [])
 
   // Check backend health
@@ -234,9 +263,19 @@ export default function App() {
     setCasesLoading(true)
     try {
       const data = await caseApi.getAll()
-      setCases(data || [])
+      const list = data || []
+      setCases(list)
+      if (list.length > 0) {
+        const firstNum = list[0].case_number || list[0].caseNumber
+        if (firstNum && !caseId) {
+          setCaseId(firstNum)
+        }
+      } else {
+        if (!caseId) setCaseId('CASE-2026-001')
+      }
     } catch (e: any) {
-      showToast('Could not load assessment cases: ' + e.message, 'error')
+      console.warn('Could not load assessment cases:', e)
+      if (!caseId) setCaseId('CASE-2026-001')
     } finally {
       setCasesLoading(false)
     }
@@ -295,7 +334,7 @@ export default function App() {
     setLoginError(null)
     try {
       await authApi.verifyLoginOtp(loginUsername, loginOtp)
-      showToast('Step 2 complete: OTP verified! Align your face for Step 3 biometric authentication.', 'info')
+      showToast('Step 2 complete: OTP verified! Please look at the camera for face verification.', 'info')
       setFaceLoginEmail(loginUsername)
       setFaceError(null)
       setFaceLivePhoto(null)
@@ -765,6 +804,51 @@ export default function App() {
     }
   }
 
+  // NYAYASETU SECURE VIEWER SESSION HANDLER
+  const handleOpenViewer = async (doc: any) => {
+    const docId = doc.id
+    const ver = doc.currentVersion ?? doc.version ?? 1
+    const docName = doc.originalFilename || doc.filename || docId
+    const docCaseId = doc.caseId || caseId || 'CASE-GENERAL'
+    const docClassification = doc.classification || 'CONFIDENTIAL'
+
+    setViewerLoading(true)
+    showToast(`Establishing secure viewing session for ${docName}...`, 'info')
+
+    try {
+      // 1. Request authenticated viewing session with dynamic watermark lines and audit log
+      const session = await docApi.getViewSession(docId, ver)
+
+      // 2. Fetch decrypted document preview stream (inline disposition)
+      const preview = await docApi.getPreviewBlob(docId, ver)
+
+      setViewSessionData(session)
+      setViewBlob(preview.blob)
+      setViewMimeType(preview.mimeType || doc.mimeType || 'application/pdf')
+      setViewSha256(preview.sha256 || doc.sha256 || doc.originalSha256)
+      setViewerDoc({
+        id: docId,
+        caseId: docCaseId,
+        originalFilename: docName,
+        mimeType: preview.mimeType || doc.mimeType || 'application/pdf',
+        fileSize: preview.blob.size,
+        documentType: doc.documentType || 'DOCUMENT',
+        classification: docClassification,
+        uploadedBy: doc.uploadedBy || currentUser?.username || 'OFFICER',
+        currentVersion: ver,
+        status: doc.status || 'ACTIVE',
+        createdAt: doc.createdAt || new Date().toISOString()
+      })
+      setViewerOpen(true)
+      loadAuditLogs()
+    } catch (err: any) {
+      console.error('Failed to open secure viewer:', err)
+      showToast(err.message || 'Unable to initialize secure viewer.', 'error')
+    } finally {
+      setViewerLoading(false)
+    }
+  }
+
   // SYSTEM RESET
   const handleResetSystem = async () => {
     if (!confirm('Are you sure you want to reset the database and test documents?')) return
@@ -928,7 +1012,7 @@ export default function App() {
                       <span>Biometric Face Verification</span>
                     </div>
                     <p className="face-auth-subtitle">
-                      Please capture your live photo to complete authentication.
+                      Look directly into the camera to capture your face photo for identity verification.
                     </p>
                   </div>
 
@@ -947,7 +1031,7 @@ export default function App() {
                         Verifying your identity...
                       </div>
                       <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                        Comparing live facial frame against registered biometric photo...
+                        Comparing facial frame against registered biometric profile...
                       </div>
                     </div>
                   ) : (
@@ -956,8 +1040,41 @@ export default function App() {
                         Authenticating as: <b style={{ color: 'var(--accent-cyan)' }}>{faceLoginEmail || loginUsername}</b>
                       </div>
 
-                      {/* Live Camera Mode */}
-                      {!faceLivePreview ? (
+                      {/* State 1: Photo Preview Mode (when captured from Camera) */}
+                      {faceLivePreview ? (
+                        <div className="photo-preview-card" style={{ marginBottom: '14px' }}>
+                          <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                            CONFIRM YOUR PHOTO
+                          </div>
+                          <div className="photo-preview-image-wrap">
+                            <img
+                              src={faceLivePreview}
+                              alt="Captured Verification Photo"
+                              className="photo-preview-image"
+                            />
+                          </div>
+                          <div className="photo-action-buttons">
+                            <button
+                              type="button"
+                              onClick={retakeFacePhoto}
+                              className="btn btn-secondary"
+                              style={{ fontSize: '0.82rem', padding: '6px 14px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                            >
+                              <RotateCcw size={14} /> Retake Photo
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleVerifyFaceLogin}
+                              className="btn btn-primary"
+                              disabled={faceVerifying || (!faceLoginEmail && !loginUsername)}
+                              style={{ fontSize: '0.82rem', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                            >
+                              <Check size={14} /> Verify &amp; Sign In
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        /* State 2: Live Camera View Directly */
                         <div className="camera-feed-container" style={{ marginBottom: '14px' }}>
                           <div className="camera-overlay-badge">
                             <span className="camera-rec-dot"></span>
@@ -988,39 +1105,6 @@ export default function App() {
                             >
                               <X size={16} />
                               Cancel
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        /* Captured Photo Preview Mode */
-                        <div className="photo-preview-card" style={{ marginBottom: '14px' }}>
-                          <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                            CONFIRM YOUR PHOTO
-                          </div>
-                          <div className="photo-preview-image-wrap">
-                            <img
-                              src={faceLivePreview}
-                              alt="Captured Live Face"
-                              className="photo-preview-image"
-                            />
-                          </div>
-                          <div className="photo-action-buttons">
-                            <button
-                              type="button"
-                              onClick={retakeFacePhoto}
-                              className="btn btn-secondary"
-                              style={{ fontSize: '0.82rem', padding: '6px 14px', display: 'flex', alignItems: 'center', gap: '4px' }}
-                            >
-                              <RotateCcw size={14} /> Retake
-                            </button>
-                            <button
-                              type="button"
-                              onClick={handleVerifyFaceLogin}
-                              className="btn btn-primary"
-                              disabled={faceVerifying || (!faceLoginEmail && !loginUsername)}
-                              style={{ fontSize: '0.82rem', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '6px' }}
-                            >
-                              <Check size={14} /> Verify &amp; Sign In
                             </button>
                           </div>
                         </div>
@@ -1479,7 +1563,29 @@ export default function App() {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Case ID</label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <label style={{ margin: 0 }}>Case ID</label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const custom = prompt('Enter Case Number / ID (e.g. CASE-2026-001):', caseId || 'CASE-2026-001')
+                          if (custom && custom.trim()) {
+                            setCaseId(custom.trim().toUpperCase())
+                          }
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--accent-cyan)',
+                          fontSize: '0.74rem',
+                          cursor: 'pointer',
+                          textDecoration: 'underline',
+                          padding: 0
+                        }}
+                      >
+                        + Enter Custom Case ID
+                      </button>
+                    </div>
                     <select
                       value={caseId}
                       onChange={e => setCaseId(e.target.value)}
@@ -1488,11 +1594,24 @@ export default function App() {
                       <option value="" disabled>
                         {casesLoading ? 'Loading authorized cases...' : 'Select an authorized case'}
                       </option>
-                      {cases.map(item => (
-                        <option key={item.case_number} value={item.case_number}>
-                          {item.case_number} - {item.title}
-                        </option>
-                      ))}
+                      {cases.map((item, idx) => {
+                        const num = item.case_number || item.caseNumber || `CASE-2026-00${idx + 1}`
+                        return (
+                          <option key={num} value={num}>
+                            {num} - {item.title || 'Legal Case'}
+                          </option>
+                        )
+                      })}
+                      {cases.length === 0 && (
+                        <>
+                          <option value="CASE-2026-001">CASE-2026-001 - General Legal &amp; Forensic Investigation</option>
+                          <option value="CASE-2026-002">CASE-2026-002 - Cyber Crime &amp; Financial Fraud</option>
+                          <option value="CASE-2026-003">CASE-2026-003 - Digital Evidence Intake</option>
+                        </>
+                      )}
+                      {caseId && !cases.some(c => (c.case_number || c.caseNumber) === caseId) && (
+                        <option value={caseId}>{caseId} (Selected Case)</option>
+                      )}
                     </select>
                   </div>
                   <div className="form-group">
@@ -1619,6 +1738,33 @@ export default function App() {
                       {uploadSuccessResult.objectKey || `cases/${caseId}/documents/${uploadSuccessResult.documentId}/versions/v1/${uploadSuccessResult.filename || selectedFile?.name}`}
                     </div>
                   </div>
+
+                  {/* Immediate Action: View in NyayaSetu Secure Viewer */}
+                  <div style={{ marginTop: '16px', display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => handleOpenViewer({
+                        id: uploadSuccessResult.documentId || uploadSuccessResult.id,
+                        originalFilename: uploadSuccessResult.originalFilename || uploadSuccessResult.filename || selectedFile?.name,
+                        caseId: caseId,
+                        classification: classification,
+                        currentVersion: uploadSuccessResult.version || 1,
+                        sha256: uploadSuccessResult.sha256 || uploadSuccessResult.originalSha256
+                      })}
+                      disabled={viewerLoading}
+                      style={{
+                        background: 'linear-gradient(135deg, #00f2fe, #4facfe)',
+                        color: '#050c1a',
+                        fontWeight: 600,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <Eye size={16} /> View in Secure Viewer (Watermarked)
+                    </button>
+                  </div>
                 </div>
               )}
             </section>
@@ -1695,6 +1841,20 @@ export default function App() {
                         </td>
                         <td style={{ textAlign: 'right' }}>
                           <div style={{ display: 'inline-flex', gap: '6px' }}>
+                            <button
+                              className="btn btn-primary btn-xs"
+                              onClick={() => handleOpenViewer(doc)}
+                              disabled={viewerLoading}
+                              title="Open Protected Document Viewer (Copy/Paste Blocked + Watermarked)"
+                              style={{
+                                background: 'linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(79, 172, 254, 0.2))',
+                                borderColor: 'var(--accent-cyan)',
+                                color: 'var(--accent-cyan)',
+                                fontWeight: 600
+                              }}
+                            >
+                              <Eye size={12} /> View
+                            </button>
                             <button
                               className="btn btn-secondary btn-xs"
                               onClick={() => handleDownload(doc)}
@@ -2096,6 +2256,30 @@ export default function App() {
             ) : null}
           </div>
         </div>
+      )}
+
+      {/* ----------------------------------------------------
+          MODAL: NYAYASETU SECURE DOCUMENT VIEWER
+          ---------------------------------------------------- */}
+      {viewerOpen && viewerDoc && viewSessionData && viewBlob && (
+        <SecureDocumentViewer
+          documentId={viewerDoc.id}
+          documentTitle={viewerDoc.originalFilename}
+          caseId={viewerDoc.caseId}
+          classification={viewerDoc.classification}
+          version={viewerDoc.currentVersion}
+          sessionData={viewSessionData}
+          previewBlob={viewBlob}
+          mimeType={viewMimeType}
+          sha256={viewSha256}
+          onClose={() => {
+            setViewerOpen(false)
+            setViewerDoc(null)
+            setViewBlob(null)
+            setViewSessionData(null)
+          }}
+          onCopyAttempt={(msg) => showToast(msg, 'error')}
+        />
       )}
 
       {/* Toasts */}
