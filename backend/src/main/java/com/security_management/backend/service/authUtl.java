@@ -33,7 +33,7 @@ public class authUtl {
        return  Jwts.builder()
                      .setSubject(userInformation.getUsername())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis()+1000*60*10))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 7)) // 7-day validity for active officers
                 .signWith(generateSecretKey(), SignatureAlgorithm.HS256)
                 .compact();
 

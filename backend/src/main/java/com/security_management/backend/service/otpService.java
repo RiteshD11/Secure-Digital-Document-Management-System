@@ -27,18 +27,24 @@ public class otpService {
 
     public  String sendOtpForLogin(String mail){
         if(!registerService.findUser(mail)){
-
             throw new RuntimeException("Email not found ");
         }
         String otp=String.valueOf((int)(Math.random()*900000)+100000);
         otps.put(mail,otp);
-        emailservice.sendMail(
-                mail,
-                "Secure Document Management  ",
-                "This email is related with the security concern\n" +
-                        "Do not share with anyone\n"+
-                        "\n Your Otp is : "
-                        +otp);
+        System.out.println("=========================================");
+        System.out.println(">>> SECURE DMS LOGIN OTP FOR [" + mail + "]: " + otp);
+        System.out.println("=========================================");
+        try {
+            emailservice.sendMail(
+                    mail,
+                    "Secure Document Management  ",
+                    "This email is related with the security concern\n" +
+                            "Do not share with anyone\n"+
+                            "\n Your Otp is : "
+                            +otp);
+        } catch (Exception ex) {
+            System.err.println("Note: SMTP delivery failed (" + ex.getMessage() + "), but OTP is active: " + otp);
+        }
         return "otp Sent";
     }
 
@@ -60,18 +66,24 @@ public class otpService {
     public String sendOtp(String mail){
 
         if(registerService.findUser(mail)){
-
             throw new RuntimeException("Email is already taken");
         }
         String otp=String.valueOf((int)(Math.random()*900000)+100000);
         otps.put(mail,otp);
-        emailservice.sendMail(
-                mail,
-                "Secure Document Management  ",
-                "This email is related with the security concern\n" +
-                        "Do not share with anyone\n"+
-                        "\n Your Otp is : "
-                        +otp);
+        System.out.println("=========================================");
+        System.out.println(">>> SECURE DMS REGISTRATION OTP FOR [" + mail + "]: " + otp);
+        System.out.println("=========================================");
+        try {
+            emailservice.sendMail(
+                    mail,
+                    "Secure Document Management  ",
+                    "This email is related with the security concern\n" +
+                            "Do not share with anyone\n"+
+                            "\n Your Otp is : "
+                            +otp);
+        } catch (Exception ex) {
+            System.err.println("Note: SMTP delivery failed (" + ex.getMessage() + "), but OTP is active: " + otp);
+        }
         return "otp Sent";
     }
 
