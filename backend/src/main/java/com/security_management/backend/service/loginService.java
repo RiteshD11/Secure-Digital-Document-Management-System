@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,9 +26,14 @@ public class loginService {
     private AuthenticationManager authenticationManager;
     public loginResponseDto loginUser( loginRequestDto logindto){
 
+            if (logindto == null || logindto.getUsername() == null || logindto.getUsername().trim().isEmpty()) {
+                    throw new IllegalArgumentException("Username or email is required.");
+            }
+
+            String username = logindto.getUsername().trim();
 
         Authentication authentication=authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(logindto.getUsername(),logindto.getPassword())
+                                new UsernamePasswordAuthenticationToken(username,logindto.getPassword())
 
                 /*
                 Here in this code we are giving the details to the Authentication Manager
@@ -36,7 +42,15 @@ public class loginService {
 
 
       if(authentication.isAuthenticated()){
-          otpService.sendOtpForLogin(logindto.getUsername());
+          try {
+              otpService.sendOtpForLogin(username);
+          } catch (MailException ex) {
+              String reason = ex.getMostSpecificCause() != null
+                      ? ex.getMostSpecificCause().getMessage()
+                      : ex.getMessage();
+              throw new IllegalStateException(
+                      "Credentials accepted, but the login OTP could not be sent: " + reason, ex);
+          }
 //          user use =registerService.getSingleUser(logindto.getUsername());
 
 //            String token=authUtl.generateAccessToekn(use);

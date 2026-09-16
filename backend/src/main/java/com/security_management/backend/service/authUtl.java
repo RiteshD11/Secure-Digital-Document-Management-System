@@ -31,7 +31,7 @@ public class authUtl {
     public String generateAccessToekn(user userInformation){
 
        return  Jwts.builder()
-                .setSubject(userInformation.getFirstName())
+                     .setSubject(userInformation.getUsername())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis()+1000*60*10))
                 .signWith(generateSecretKey(), SignatureAlgorithm.HS256)

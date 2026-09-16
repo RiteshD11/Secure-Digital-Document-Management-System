@@ -46,6 +46,7 @@ public class DocumentUploadService {
     private final DocumentVersionRepository documentVersionRepository;
     private final AuditService auditService;
     private final DocumentAccessService documentAccessService;
+    private final CaseAccessService caseAccessService;
 
     @Autowired
     public DocumentUploadService(FileValidationService fileValidationService,
@@ -58,7 +59,8 @@ public class DocumentUploadService {
                                  DocumentRepository documentRepository,
                                  DocumentVersionRepository documentVersionRepository,
                                  AuditService auditService,
-                                 DocumentAccessService documentAccessService) {
+                                 DocumentAccessService documentAccessService,
+                                 CaseAccessService caseAccessService) {
         this.fileValidationService = fileValidationService;
         this.malwareScanService = malwareScanService;
         this.hashService = hashService;
@@ -70,6 +72,7 @@ public class DocumentUploadService {
         this.documentVersionRepository = documentVersionRepository;
         this.auditService = auditService;
         this.documentAccessService = documentAccessService;
+        this.caseAccessService = caseAccessService;
     }
 
     @jakarta.annotation.PostConstruct
@@ -100,10 +103,12 @@ public class DocumentUploadService {
                                                  String classification,
                                                  String userId,
                                                  String ipAddress) {
-        String effectiveUserId = (userId != null && !userId.trim().isEmpty()) ? userId : "USER-42";
-        String effectiveCaseId = (caseId != null && !caseId.trim().isEmpty()) ? caseId : "CASE-101";
+        String effectiveUserId = requireValue(userId, "userId");
+        String effectiveCaseId = requireValue(caseId, "caseId");
         String effectiveDocType = (documentType != null && !documentType.trim().isEmpty()) ? documentType : "FIR";
         String effectiveClassification = (classification != null && !classification.trim().isEmpty()) ? classification : "CONFIDENTIAL";
+
+        caseAccessService.requireCaseAccess(effectiveCaseId, effectiveUserId);
 
         // Step 1 & 2: User and Case authorization (validated here for demo context)
         log.info("Starting upload pipeline for user '{}', case '{}', file '{}'",
@@ -263,7 +268,8 @@ public class DocumentUploadService {
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new DocumentNotFoundException("Document not found with ID: " + documentId));
 
-        String effectiveUserId = (userId != null && !userId.trim().isEmpty()) ? userId : document.getUploadedBy();
+        String effectiveUserId = requireValue(userId, "userId");
+        caseAccessService.requireCaseAccess(document.getCaseId(), effectiveUserId);
 
         fileValidationService.validateFile(file);
 
@@ -381,5 +387,12 @@ public class DocumentUploadService {
                 .encryptionAlgorithm("MINIO_DIRECT_STORAGE")
                 .createdAt(newVersion.getCreatedAt())
                 .build();
+    }
+
+    private String requireValue(String value, String fieldName) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new SecurityException("Authenticated " + fieldName + " is required.");
+        }
+        return value.trim();
     }
 }

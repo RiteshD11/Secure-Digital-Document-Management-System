@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -58,7 +59,7 @@ class AccessControlServiceTests {
         authorizedAccess.setUser_id("USER-42");
         authorizedAccess.setStatus(AccessStatus.ACTIVE);
 
-        when(caseRepository.findAll()).thenReturn(List.of(caseOne, caseTwo));
+        when(caseRepository.findByCase_number("CASE-101")).thenReturn(Optional.of(caseOne));
         when(caseAccessRepository.findByUser_id("USER-42")).thenReturn(List.of(authorizedAccess));
 
         List<cases> result = caseAccessService.getAllCases("USER-42");

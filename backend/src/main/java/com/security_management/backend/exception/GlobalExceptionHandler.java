@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.server.ResponseStatusException;
+import jakarta.persistence.EntityNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -37,6 +38,21 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DocumentNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(DocumentNotFoundException ex) {
         return buildResponse(HttpStatus.NOT_FOUND, "NOT_FOUND", ex.getMessage());
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleEntityNotFound(EntityNotFoundException ex) {
+        return buildResponse(HttpStatus.NOT_FOUND, "NOT_FOUND", ex.getMessage());
+    }
+
+    @ExceptionHandler(SecurityException.class)
+    public ResponseEntity<Map<String, Object>> handleForbidden(SecurityException ex) {
+        return buildResponse(HttpStatus.FORBIDDEN, "FORBIDDEN", ex.getMessage());
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, Object>> handleConflict(IllegalStateException ex) {
+        return buildResponse(HttpStatus.CONFLICT, "CONFLICT", ex.getMessage());
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)

@@ -31,15 +31,18 @@ public class DocumentAccessService {
     private final DocumentRepository documentRepository;
     private final userRepository userRepository;
     private final AuditService auditService;
+    private final CaseAccessService caseAccessService;
 
     public DocumentAccessService(DocumentAccessRepository documentAccessRepository,
                                  DocumentRepository documentRepository,
                                  userRepository userRepository,
-                                 AuditService auditService) {
+                                 AuditService auditService,
+                                 CaseAccessService caseAccessService) {
         this.documentAccessRepository = documentAccessRepository;
         this.documentRepository = documentRepository;
         this.userRepository = userRepository;
         this.auditService = auditService;
+        this.caseAccessService = caseAccessService;
     }
 
     @Transactional
@@ -145,6 +148,14 @@ public class DocumentAccessService {
     }
 
     public boolean checkAccess(String documentId, String userId, DocumentPermission requestedPermission) {
+        Optional<Document> document = documentRepository.findById(documentId);
+        if (document.isPresent()
+                && (requestedPermission == DocumentPermission.VIEW
+                || requestedPermission == DocumentPermission.DOWNLOAD
+                || requestedPermission == DocumentPermission.UPLOAD)
+                && caseAccessService.hasActiveAccess(document.get().getCaseId(), userId)) {
+            return true;
+        }
         Integer resolvedUserId = resolveUserId(userId);
         if (resolvedUserId == null) {
             return false;
@@ -152,10 +163,24 @@ public class DocumentAccessService {
         return checkAccess(documentId, resolvedUserId, requestedPermission);
     }
 
+    @Transactional(readOnly = true)
+    public void requireDocumentCaseAccess(String documentId, String userId) {
+        Document document = documentRepository.findById(documentId)
+                .orElseThrow(() -> new EntityNotFoundException("Document not found: " + documentId));
+        caseAccessService.requireCaseAccess(document.getCaseId(), userId);
+    }
+
     public boolean checkAccess(String documentId, Integer userId, DocumentPermission requestedPermission) {
         Optional<Document> document = documentRepository.findById(documentId);
         if (document.isEmpty()) {
             return false;
+        }
+
+        if ((requestedPermission == DocumentPermission.VIEW
+                || requestedPermission == DocumentPermission.DOWNLOAD
+                || requestedPermission == DocumentPermission.UPLOAD)
+                && caseAccessService.hasActiveAccess(document.get().getCaseId(), String.valueOf(userId))) {
+            return true;
         }
 
         Optional<user> targetUser = userRepository.findById(userId);

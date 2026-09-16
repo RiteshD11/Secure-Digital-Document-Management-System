@@ -24,6 +24,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -52,6 +54,7 @@ public class DocumentController {
     private final AuditService auditService;
     private final StorageService storageService;
     private final com.security_management.backend.service.DocumentAccessService documentAccessService;
+    private final com.security_management.backend.service.CaseAccessService caseAccessService;
 
     @Autowired
     public DocumentController(DocumentUploadService documentUploadService,
@@ -62,7 +65,8 @@ public class DocumentController {
                               AuditLogRepository auditLogRepository,
                               AuditService auditService,
                               StorageService storageService,
-                              com.security_management.backend.service.DocumentAccessService documentAccessService) {
+                              com.security_management.backend.service.DocumentAccessService documentAccessService,
+                              com.security_management.backend.service.CaseAccessService caseAccessService) {
         this.documentUploadService = documentUploadService;
         this.documentDownloadService = documentDownloadService;
         this.documentVerificationService = documentVerificationService;
@@ -72,6 +76,7 @@ public class DocumentController {
         this.auditService = auditService;
         this.storageService = storageService;
         this.documentAccessService = documentAccessService;
+        this.caseAccessService = caseAccessService;
     }
 
     /**
@@ -80,15 +85,15 @@ public class DocumentController {
     @PostMapping(value = "/documents/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UploadDocumentResponse> uploadDocument(
             @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "caseId", required = false, defaultValue = "CASE-123") String caseId,
+            @RequestParam("caseId") String caseId,
             @RequestParam(value = "documentType", required = false, defaultValue = "FIR") String documentType,
             @RequestParam(value = "classification", required = false, defaultValue = "CONFIDENTIAL") String classification,
-            @RequestParam(value = "uploadedBy", required = false, defaultValue = "USER-42") String uploadedBy,
+            @RequestParam(value = "uploadedBy", required = false) String ignoredUploadedBy,
             HttpServletRequest request) {
 
         String clientIp = request.getRemoteAddr();
         UploadDocumentResponse response = documentUploadService.uploadDocument(
-                file, caseId, documentType, classification, uploadedBy, clientIp
+                file, caseId, documentType, classification, requireAuthenticatedUser(), clientIp
         );
         return ResponseEntity.ok(response);
     }
@@ -100,12 +105,12 @@ public class DocumentController {
     public ResponseEntity<UploadDocumentResponse> uploadNewVersion(
             @PathVariable("id") String documentId,
             @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "uploadedBy", required = false, defaultValue = "USER-42") String uploadedBy,
+            @RequestParam(value = "uploadedBy", required = false) String ignoredUploadedBy,
             HttpServletRequest request) {
 
         String clientIp = request.getRemoteAddr();
         UploadDocumentResponse response = documentUploadService.uploadNewVersion(
-                documentId, file, uploadedBy, clientIp
+            documentId, file, requireAuthenticatedUser(), clientIp
         );
         return ResponseEntity.ok(response);
     }
@@ -115,7 +120,13 @@ public class DocumentController {
      */
     @GetMapping("/documents")
     public ResponseEntity<List<Document>> getAllDocuments() {
-        return ResponseEntity.ok(documentRepository.findAllByOrderByCreatedAtDesc());
+        String userId = requireAuthenticatedUser();
+        List<String> caseIds = caseAccessService.getAllCases(userId).stream()
+            .map(com.security_management.backend.entity.cases::getCase_number)
+            .toList();
+        return ResponseEntity.ok(documentRepository.findAllByOrderByCreatedAtDesc().stream()
+            .filter(document -> caseIds.contains(document.getCaseId()))
+            .toList());
     }
 
     /**
@@ -125,6 +136,7 @@ public class DocumentController {
     public ResponseEntity<DocumentDetailResponse> getDocumentDetails(@PathVariable("id") String documentId) {
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new DocumentNotFoundException("Document not found: " + documentId));
+        caseAccessService.requireCaseAccess(document.getCaseId(), requireAuthenticatedUser());
         List<DocumentVersion> versions = documentVersionRepository
                 .findByDocumentIdOrderByVersionNumberDesc(documentId);
 
@@ -138,10 +150,11 @@ public class DocumentController {
     public ResponseEntity<Resource> downloadDocument(
             @PathVariable("id") String documentId,
             @RequestParam(value = "version", required = false) Integer version,
-            @RequestParam(value = "userId", required = false, defaultValue = "OFFICER-A") String userId,
+            @RequestParam(value = "userId", required = false) String ignoredUserId,
             HttpServletRequest request) {
 
         String clientIp = request.getRemoteAddr();
+        String userId = requireAuthenticatedUser();
 
         boolean authorized = documentAccessService.checkAccess(documentId, userId, com.security_management.backend.entity.accessList.DocumentPermission.DOWNLOAD);
         if (!authorized) {
@@ -182,6 +195,9 @@ public class DocumentController {
     public ResponseEntity<DocumentVerificationResponse> verifyDocument(
             @PathVariable("id") String documentId,
             @RequestParam(value = "version", required = false) Integer version) {
+        Document document = documentRepository.findById(documentId)
+            .orElseThrow(() -> new DocumentNotFoundException("Document not found: " + documentId));
+        caseAccessService.requireCaseAccess(document.getCaseId(), requireAuthenticatedUser());
         DocumentVerificationResponse response = documentVerificationService
                 .verifyDocumentSecurity(documentId, version);
         return ResponseEntity.ok(response);
@@ -195,6 +211,7 @@ public class DocumentController {
             @RequestParam(value = "documentId", required = false) String documentId,
             @RequestParam(value = "caseId", required = false) String caseId) {
 
+        String userId = requireAuthenticatedUser();
         List<AuditLog> logs;
         if (documentId != null && !documentId.trim().isEmpty()) {
             logs = auditService.getAuditLogsForDocument(documentId);
@@ -203,6 +220,10 @@ public class DocumentController {
         } else {
             logs = auditService.getAllAuditLogs();
         }
+
+        logs = logs.stream()
+            .filter(log -> caseAccessService.hasActiveAccess(log.getCaseId(), userId))
+            .toList();
 
         List<AuditLogResponse> response = logs.stream()
                 .map(l -> AuditLogResponse.builder()
@@ -219,6 +240,15 @@ public class DocumentController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(response);
+    }
+
+    private String requireAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || "anonymousUser".equalsIgnoreCase(authentication.getName())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required.");
+        }
+        return authentication.getName();
     }
 
     /**
