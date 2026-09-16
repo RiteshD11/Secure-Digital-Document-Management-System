@@ -50,6 +50,7 @@ public class DocumentAccessController {
 
     @GetMapping("/documents/{documentId}/access")
     public ResponseEntity<List<DocumentAccessResponse>> getDocumentUsers(@PathVariable String documentId) {
+        documentAccessService.requireDocumentCaseAccess(documentId, resolveRequestingUserId());
         return ResponseEntity.ok(documentAccessService.getDocumentUsers(documentId));
     }
 
@@ -100,27 +101,33 @@ public class DocumentAccessController {
     @GetMapping("/documents/{documentId}/access/check")
     public ResponseEntity<Boolean> checkAccess(
             @PathVariable String documentId,
-            @RequestParam Integer userId,
+            @RequestParam(required = false) Integer ignoredUserId,
             @RequestParam DocumentPermission permission) {
 
-        boolean allowed = documentAccessService.checkAccess(documentId, userId, permission);
+        boolean allowed = documentAccessService.checkAccess(documentId, resolveRequestingUserId(), permission);
         return ResponseEntity.ok(allowed);
     }
 
     @GetMapping("/users/{userId}/access")
     public ResponseEntity<List<DocumentAccessResponse>> getUserDocuments(@PathVariable Integer userId) {
-        return ResponseEntity.ok(documentAccessService.getUserDocuments(userId));
+        String authenticatedUser = resolveRequestingUserId();
+        Integer authenticatedUserId = documentAccessService.resolveUserId(authenticatedUser);
+        if (authenticatedUserId == null || !authenticatedUserId.equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Users may only inspect their own document access.");
+        }
+        return ResponseEntity.ok(documentAccessService.getUserDocuments(authenticatedUserId));
     }
 
     private String resolveRequestingUserId(HttpServletRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication instanceof AnonymousAuthenticationToken) {
-            return request.getHeader("X-User-Id");
-        }
         if (authentication != null && authentication.isAuthenticated() && authentication.getName() != null
                 && !"anonymousUser".equalsIgnoreCase(authentication.getName())) {
             return authentication.getName();
         }
-        return request.getHeader("X-User-Id");
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required.");
+    }
+
+    private String resolveRequestingUserId() {
+        return resolveRequestingUserId(null);
     }
 }

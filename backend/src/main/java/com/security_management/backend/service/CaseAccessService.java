@@ -68,9 +68,53 @@ public class CaseAccessService {
     }
 
     @Transactional(readOnly = true)
+    public List<cases> getAllCases(String userId) {
+        String normalizedUserId = normalizeRequired(userId, "userId");
+        return caseAccessRepository.findByUser_id(normalizedUserId).stream()
+                .filter(this::isActive)
+                .map(case_access::getCase_id)
+                .map(caseRepository::findByCase_number)
+                .flatMap(Optional::stream)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public boolean hasActiveAccess(String caseNumber, String userId) {
+        if (caseNumber == null || caseNumber.isBlank() || userId == null || userId.isBlank()) {
+            return false;
+        }
+        return caseAccessRepository.findByCase_idAndUser_id(caseNumber.trim(), userId.trim())
+                .map(this::isActive)
+                .orElse(false);
+    }
+
+    @Transactional(readOnly = true)
+    public void requireCaseAccess(String caseNumber, String userId) {
+        String normalizedCaseNumber = normalizeRequired(caseNumber, "caseNumber");
+        getCase(normalizedCaseNumber);
+        if (!hasActiveAccess(normalizedCaseNumber, userId)) {
+            throw new SecurityException("User is not authorized for case " + normalizedCaseNumber);
+        }
+    }
+
+    @Transactional(readOnly = true)
     public cases getCase(String caseNumber) {
         return caseRepository.findByCase_number(caseNumber)
                 .orElseThrow(() -> new EntityNotFoundException("Case not found: " + caseNumber));
+    }
+
+    @Transactional(readOnly = true)
+    public void requireCaseOwner(String caseNumber, String userId) {
+        cases targetCase = getCase(caseNumber);
+        if (userId == null || !userId.equals(targetCase.getCreated_by())) {
+            throw new SecurityException("Only the case owner may manage case access.");
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public CaseAccessRequest getCaseAccessRequest(Long requestId) {
+        return caseAccessRequestRepository.findById(requestId)
+                .orElseThrow(() -> new EntityNotFoundException("Access request not found: " + requestId));
     }
 
     @Transactional
@@ -170,5 +214,10 @@ public class CaseAccessService {
 
     private String normalizeOptional(String value, String fallback) {
         return (value == null || value.trim().isEmpty()) ? fallback : value.trim();
+    }
+
+    private boolean isActive(case_access access) {
+        return access.getStatus() == AccessStatus.ACTIVE
+                && (access.getExpiredAt() == null || access.getExpiredAt().isAfter(LocalDateTime.now()));
     }
 }

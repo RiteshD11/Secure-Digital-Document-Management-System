@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "cases", uniqueConstraints = @UniqueConstraint(name = "uk_cases_case_number", columnNames = "case_number"))
 public class cases {
 
 
@@ -22,7 +23,8 @@ public class cases {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer caseId;
 
-    @NotNull @Unique
+    @NotNull
+    @Column(name = "case_number", nullable = false, unique = true)
     private String case_number;
 
     @NotNull
