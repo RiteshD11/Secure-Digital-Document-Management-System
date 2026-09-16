@@ -1,7 +1,9 @@
 package com.security_management.backend.controller;
 
 import com.security_management.backend.dto.DocumentAccessGrantRequest;
+import com.security_management.backend.dto.DocumentAccessRequestDto;
 import com.security_management.backend.dto.DocumentAccessResponse;
+import com.security_management.backend.entity.accessList.DocumentAccessRequest;
 import com.security_management.backend.entity.accessList.DocumentPermission;
 import com.security_management.backend.service.DocumentAccessService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,6 +48,36 @@ public class DocumentAccessController {
         );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/documents/{documentId}/access/request")
+    public ResponseEntity<DocumentAccessRequest> requestAccess(
+            @PathVariable String documentId,
+            @Valid @RequestBody DocumentAccessRequestDto request,
+            HttpServletRequest httpServletRequest) {
+
+        String requestingUserId = resolveRequestingUserId(httpServletRequest);
+        DocumentAccessRequest accessRequest = documentAccessService.requestAccess(
+                documentId, request, requestingUserId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(accessRequest);
+    }
+
+    @GetMapping("/documents/{documentId}/access/requests")
+    public ResponseEntity<List<DocumentAccessRequest>> getAccessRequests(@PathVariable String documentId) {
+        String requestingUserId = resolveRequestingUserId();
+        return ResponseEntity.ok(documentAccessService.getAccessRequests(documentId, requestingUserId));
+    }
+
+    @PutMapping("/documents/access/requests/{requestId}")
+    public ResponseEntity<DocumentAccessRequest> reviewAccessRequest(
+            @PathVariable Long requestId,
+            @RequestParam boolean approved,
+            HttpServletRequest httpServletRequest) {
+
+        String reviewedBy = resolveRequestingUserId(httpServletRequest);
+        DocumentAccessRequest updatedRequest = documentAccessService.reviewAccessRequest(
+                requestId, approved, reviewedBy, httpServletRequest.getRemoteAddr());
+        return ResponseEntity.ok(updatedRequest);
     }
 
     @GetMapping("/documents/{documentId}/access")
