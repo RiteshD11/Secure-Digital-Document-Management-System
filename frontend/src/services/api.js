@@ -79,6 +79,19 @@ export function setCurrentUserRole(roleKey) {
   return currentUser;
 }
 
+function apiFetch(url, options = {}) {
+  const token = typeof window !== 'undefined'
+    ? JSON.parse(localStorage.getItem('dms_officer') || 'null')?.token
+    : null;
+  const headers = new Headers(options.headers || {});
+
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  return fetch(url, { ...options, headers });
+}
+
 /* ----------------------------------------------------
    AUTHENTICATION API (Connected to Spring Boot Backend)
    - Step 1 Login: POST /auth/login
@@ -150,10 +163,11 @@ export const authApi = {
     const res = await fetch(`${BACKEND_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({ username: username.trim(), password })
     });
     if (!res.ok) {
-      throw new Error('Invalid credentials or officer badge not recognized');
+      const data = await res.json().catch(() => null);
+      throw new Error(data?.message || 'Login failed. Check your registered email/username and password.');
     }
     return await res.json().catch(() => ({ status: 'success' }));
   },
@@ -216,7 +230,7 @@ export const docApi = {
     formData.append('classification', classification);
     formData.append('uploadedBy', uploadedBy);
 
-    const res = await fetch(`${BACKEND_URL}/api/documents/upload`, {
+    const res = await apiFetch(`${BACKEND_URL}/api/documents/upload`, {
       method: 'POST',
       body: formData
     });
@@ -233,7 +247,7 @@ export const docApi = {
     formData.append('file', file);
     formData.append('uploadedBy', uploadedBy);
 
-    const res = await fetch(`${BACKEND_URL}/api/documents/${documentId}/versions`, {
+    const res = await apiFetch(`${BACKEND_URL}/api/documents/${documentId}/versions`, {
       method: 'POST',
       body: formData
     });
@@ -246,14 +260,14 @@ export const docApi = {
 
   // Fetch all documents from backend
   async getAll() {
-    const res = await fetch(`${BACKEND_URL}/api/documents`, { method: 'GET' });
+    const res = await apiFetch(`${BACKEND_URL}/api/documents`, { method: 'GET' });
     if (!res.ok) throw new Error('Failed to fetch documents from vault');
     return await res.json();
   },
 
   // Get document details and version tree
   async getById(id) {
-    const res = await fetch(`${BACKEND_URL}/api/documents/${id}`, { method: 'GET' });
+    const res = await apiFetch(`${BACKEND_URL}/api/documents/${id}`, { method: 'GET' });
     if (!res.ok) throw new Error(`Document ${id} not found`);
     return await res.json();
   },
@@ -263,7 +277,7 @@ export const docApi = {
     const url = version 
       ? `${BACKEND_URL}/api/documents/${id}/verify?version=${version}`
       : `${BACKEND_URL}/api/documents/${id}/verify`;
-    const res = await fetch(url, { method: 'GET' });
+    const res = await apiFetch(url, { method: 'GET' });
     if (!res.ok) throw new Error('Document verification check failed');
     return await res.json();
   },
@@ -274,7 +288,7 @@ export const docApi = {
       ? `${BACKEND_URL}/api/documents/${id}/versions/${version}/download?userId=${encodeURIComponent(userId)}`
       : `${BACKEND_URL}/api/documents/${id}/download?userId=${encodeURIComponent(userId)}`;
     
-    const res = await fetch(url, { method: 'GET' });
+    const res = await apiFetch(url, { method: 'GET' });
     if (!res.ok) throw new Error('Decryption & download failed from vault');
     
     const blob = await res.blob();
@@ -310,15 +324,41 @@ export const docApi = {
     if (caseId) params.append('caseId', caseId);
     if (params.toString()) url += `?${params.toString()}`;
 
-    const res = await fetch(url, { method: 'GET' });
+    const res = await apiFetch(url, { method: 'GET' });
     if (!res.ok) throw new Error('Failed to retrieve audit trail');
     return await res.json();
   },
 
   // Reset database & storage
   async resetSystem() {
-    const res = await fetch(`${BACKEND_URL}/api/test/reset`, { method: 'POST' });
+    const res = await apiFetch(`${BACKEND_URL}/api/test/reset`, { method: 'POST' });
     if (!res.ok) throw new Error('System reset failed');
+    return await res.json();
+  }
+};
+
+/* ----------------------------------------------------
+   CASE ACCESS / ASSESSMENT LIST API
+---------------------------------------------------- */
+export const caseApi = {
+  async getAll() {
+    const res = await apiFetch(`${BACKEND_URL}/api/cases`, { method: 'GET' });
+    if (!res.ok) throw new Error('Failed to fetch assessment cases');
+    return await res.json();
+  },
+
+  async create({ caseNumber, title, description, createdBy }) {
+    const res = await apiFetch(`${BACKEND_URL}/api/cases`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ caseNumber, title, description, createdBy })
+    });
+
+    if (!res.ok) {
+      const error = await res.text().catch(() => '');
+      throw new Error(error || 'Failed to create case');
+    }
+
     return await res.json();
   }
 };

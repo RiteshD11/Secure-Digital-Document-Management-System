@@ -237,21 +237,18 @@ mailPassword=your_email_app_password
 
 ### 3. Start MinIO S3 Object Storage
 
-Start the MinIO Docker container:
-```bash
-docker run -d \
-  -p 9000:9000 \
-  -p 9001:9001 \
-  --name minio-server \
-  -e "MINIO_ROOT_USER=minioadmin" \
-  -e "MINIO_ROOT_PASSWORD=minioadmin" \
-  -v ~/minio-data:/data \
-  quay.io/minio/minio server /data --console-address ":9001"
+Start the MinIO Docker Compose setup:
+```powershell
+cd MinIO
+docker compose up -d
 ```
 
 * **MinIO Console URL**: [`http://localhost:9001`](http://localhost:9001)
-* **Username**: `minioadmin`
-* **Password**: `minioadmin`
+* **Username**: `ritesh`
+* **Password**: `Ritesh@minio10`
+* **Bucket**: `legal-dms` (created automatically)
+
+The Compose setup is defined in [`MinIO/docker-compose.yml`](MinIO/docker-compose.yml) and uses the persistent Docker volume `minio-data`.
 
 ---
 
@@ -265,7 +262,7 @@ cd backend
 ```
 * Backend API will start on **`http://localhost:8082`**
 * Automatically initializes tables in MySQL (`securitymanagementdb`)
-* Connects to MinIO and initializes the `secure-dms-documents` bucket
+* Connects to MinIO and initializes the `legal-dms` bucket
 
 ### 2. Open Frontend Dashboard
 Simply open [`frontend/index.html`](file:///Users/ombichare/Desktop/SIH/frontend/index.html) in your browser:

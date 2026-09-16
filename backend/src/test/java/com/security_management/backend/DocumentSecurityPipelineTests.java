@@ -8,17 +8,24 @@ import com.security_management.backend.encryption.EncryptionService;
 import com.security_management.backend.entity.AuditLog;
 import com.security_management.backend.entity.Document;
 import com.security_management.backend.entity.DocumentVersion;
+import com.security_management.backend.entity.Status;
+import com.security_management.backend.entity.cases;
+import com.security_management.backend.entity.accessList.AccessStatus;
+import com.security_management.backend.entity.accessList.case_access;
 import com.security_management.backend.exception.EncryptionException;
 import com.security_management.backend.exception.IntegrityException;
 import com.security_management.backend.exception.InvalidFileException;
 import com.security_management.backend.exception.MalwareDetectedException;
 import com.security_management.backend.repository.DocumentRepository;
 import com.security_management.backend.repository.DocumentVersionRepository;
+import com.security_management.backend.repository.CaseAccessRepository;
+import com.security_management.backend.repository.CaseRepository;
 import com.security_management.backend.service.DocumentDownloadService;
 import com.security_management.backend.service.DocumentUploadService;
 import com.security_management.backend.service.DocumentVerificationService;
 import com.security_management.backend.storage.StorageService;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,6 +35,7 @@ import org.springframework.test.context.ActiveProfiles;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -61,6 +69,47 @@ public class DocumentSecurityPipelineTests {
 
     @Autowired
     private AuditService auditService;
+
+        @Autowired
+        private CaseRepository caseRepository;
+
+        @Autowired
+        private CaseAccessRepository caseAccessRepository;
+
+        @BeforeEach
+        void seedAuthorizedTestCases() {
+                ensureCaseAccess("CASE-101", "USER-42");
+                ensureCaseAccess("CASE-101", "OFFICER-A");
+                ensureCaseAccess("CASE-202", "USER-42");
+                ensureCaseAccess("CASE-202", "OFFICER-B");
+                ensureCaseAccess("CASE-999", "ATTACKER-1");
+                ensureCaseAccess("CASE-666", "SUSPECT-9");
+                ensureCaseAccess("CASE-500", "OFFICER-1");
+                ensureCaseAccess("CASE-500", "OFFICER-2");
+        }
+
+        private void ensureCaseAccess(String caseNumber, String userId) {
+                cases targetCase = caseRepository.findByCase_number(caseNumber).orElseGet(() -> {
+                        cases newCase = new cases();
+                        newCase.setCase_number(caseNumber);
+                        newCase.setTitle("Test " + caseNumber);
+                        newCase.setStatus(Status.OPEN);
+                        newCase.setCreated_by(userId);
+                        newCase.setCreatedAt(LocalDateTime.now());
+                        newCase.setLastUpdate(LocalDateTime.now());
+                        return caseRepository.save(newCase);
+                });
+
+                if (caseAccessRepository.findByCase_idAndUser_id(caseNumber, userId).isEmpty()) {
+                        case_access access = new case_access();
+                        access.setCase_id(targetCase.getCase_number());
+                        access.setUser_id(userId);
+                        access.setGrantedBy("TEST-SETUP");
+                        access.setGrantedAt(LocalDateTime.now());
+                        access.setStatus(AccessStatus.ACTIVE);
+                        caseAccessRepository.save(access);
+                }
+        }
 
     // Standard minimal valid PDF binary
     private static final byte[] VALID_PDF_BYTES = ("%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n" +

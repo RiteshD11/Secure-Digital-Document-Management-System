@@ -34,6 +34,7 @@ public class DocumentDownloadService {
     private final HashService hashService;
     private final DigitalSignatureService digitalSignatureService;
     private final AuditService auditService;
+    private final CaseAccessService caseAccessService;
 
     @Autowired
     public DocumentDownloadService(DocumentRepository documentRepository,
@@ -43,7 +44,8 @@ public class DocumentDownloadService {
                                    EncryptionService encryptionService,
                                    HashService hashService,
                                    DigitalSignatureService digitalSignatureService,
-                                   AuditService auditService) {
+                                   AuditService auditService,
+                                   CaseAccessService caseAccessService) {
         this.documentRepository = documentRepository;
         this.documentVersionRepository = documentVersionRepository;
         this.storageService = storageService;
@@ -52,6 +54,7 @@ public class DocumentDownloadService {
         this.hashService = hashService;
         this.digitalSignatureService = digitalSignatureService;
         this.auditService = auditService;
+        this.caseAccessService = caseAccessService;
     }
 
     public static class DecryptedDocument {
@@ -114,6 +117,7 @@ public class DocumentDownloadService {
         // Step 1 & 2: Authentication and Authorization
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new DocumentNotFoundException("Document not found with ID: " + documentId));
+        caseAccessService.requireCaseAccess(document.getCaseId(), effectiveUserId);
 
         int versionToFetch = (requestedVersion != null && requestedVersion > 0)
                 ? requestedVersion : document.getCurrentVersion();

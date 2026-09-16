@@ -25,7 +25,7 @@ public class case_access {
 
     private LocalDateTime grantedAt = LocalDateTime.now();
 
-    private LocalDateTime expiredAt = LocalDateTime.now();
+    private LocalDateTime expiredAt;
 
     @Enumerated(EnumType.STRING)
     private AccessStatus status;
