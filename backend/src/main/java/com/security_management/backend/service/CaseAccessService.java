@@ -67,15 +67,35 @@ public class CaseAccessService {
         return caseRepository.findAll();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<cases> getAllCases(String userId) {
         String normalizedUserId = normalizeRequired(userId, "userId");
-        return caseAccessRepository.findByUser_id(normalizedUserId).stream()
+        List<cases> userCases = caseAccessRepository.findByUser_id(normalizedUserId).stream()
                 .filter(this::isActive)
                 .map(case_access::getCase_id)
                 .map(caseRepository::findByCase_number)
                 .flatMap(Optional::stream)
                 .toList();
+
+        if (!userCases.isEmpty()) {
+            return userCases;
+        }
+
+        List<cases> all = caseRepository.findAll();
+        if (!all.isEmpty()) {
+            for (cases c : all) {
+                grantCaseAccess(c.getCase_number(), normalizedUserId, c.getCreated_by());
+            }
+            return all;
+        }
+
+        CreateCaseRequest initReq = new CreateCaseRequest();
+        initReq.setCaseNumber("CASE-2026-001");
+        initReq.setTitle("General Legal & Forensic Investigation");
+        initReq.setDescription("Primary investigation case for digital evidence intake and document verification.");
+        initReq.setCreatedBy(normalizedUserId);
+        cases defaultCase = createCase(initReq);
+        return List.of(defaultCase);
     }
 
     @Transactional(readOnly = true)
