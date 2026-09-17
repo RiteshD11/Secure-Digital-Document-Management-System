@@ -1,0 +1,621 @@
+{
+  "doc_7490852ef8d644b6ba30d946" : {
+    "record" : {
+      "documentId" : "doc_7490852ef8d644b6ba30d946",
+      "sha3_256" : "19042d51c2d76a11680f27f6e5eac2b6958283895e7fe3f9f1975899ac12f3f0",
+      "blake3" : "0ced2d1b2d14f3d8882af1e43dff740eb1fca29c1077ad911382160bd0519b0f",
+      "sha256" : "8182159f2f013af84cb704f6d330ec31f96f96427b0a5227913242a070e3bbef",
+      "digitalSignature" : "W42xTYCTVtPjjU3IawObZZrFjdGycmeCvH4oJtot0EklC6B12liQN77Ecf6r4nbydHwi01Amr4VuWM7UP829eupV9zKmcBLGyoZTOnGv7HmIVZ8PbbVRY2z8g9mjHLICIE8WYmK/wwxLMljnfo9ckl9C663lgPY784wkvWkfmAguW5Hh4Xdxm/pSmXpVabGlsbxybr1mCguFBacbbulhDGJVxRioHjRjJSiYIyDHPnVH0Gwnzs5YjNknHewYxf6qFWkOq8C0lebSFE5XfBWlZKuCqJu3oz9gP4+1dNJ/JgCYmS2J8zPW52qtajl/pi83ixMwhUOyB3xN6yQeKhIs3g==",
+      "signatureAlgorithm" : "RSASSA-PSS (2048-bit RSA + SHA-256)",
+      "signerId" : "OFFICER-TEST",
+      "caseId" : "CASE-SEC-2026",
+      "classification" : "CONFIDENTIAL",
+      "currentCustodian" : "OFFICER-TEST",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 42, 255582000 ]
+    },
+    "status" : "ACTIVE",
+    "history" : [ {
+      "txId" : "tx_7d21b79fbf2b900ce80e25dc1769d3f4",
+      "blockNumber" : 9,
+      "eventType" : "DOCUMENT_REGISTERED",
+      "actor" : "OFFICER-TEST",
+      "details" : "Document registered and cryptographic proofs anchored to Hyperledger Fabric",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 42, 255582000 ]
+    }, {
+      "txId" : "tx_ece8d375cfef2ab1e2be8e6c60b15a99",
+      "blockNumber" : 10,
+      "eventType" : "DOCUMENT_DOWNLOADED_V1",
+      "actor" : "OFFICER-TEST",
+      "details" : "Document DOCUMENT_DOWNLOADED_V1 accessed by OFFICER-TEST",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 42, 273299000 ]
+    } ],
+    "txId" : "tx_7d21b79fbf2b900ce80e25dc1769d3f4",
+    "blockNumber" : 9,
+    "anchoredAt" : [ 2026, 9, 17, 18, 18, 42, 255582000 ]
+  },
+  "doc_test_1789649303723" : {
+    "record" : {
+      "documentId" : "doc_test_1789649303723",
+      "sha3_256" : "a3f5000000000000000000000000000000000000000000000000000000000000",
+      "blake3" : "9c2d000000000000000000000000000000000000000000000000000000000000",
+      "sha256" : "sha2560000000000000000000000000000000000000000000000000000000000",
+      "digitalSignature" : "mockBase64Signature",
+      "signatureAlgorithm" : null,
+      "signerId" : "OFFICER-44",
+      "caseId" : "CASE-SEC-2026",
+      "classification" : "TOP_SECRET",
+      "currentCustodian" : "JUDGE-BENCH-1",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 23, 723199000 ]
+    },
+    "status" : "TRANSFERRED",
+    "history" : [ {
+      "txId" : "tx_2dfab22f132c1c00b16588aa6f8252a5",
+      "blockNumber" : 1,
+      "eventType" : "DOCUMENT_REGISTERED",
+      "actor" : "OFFICER-44",
+      "details" : "Document registered and cryptographic proofs anchored to Hyperledger Fabric",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 23, 723199000 ]
+    }, {
+      "txId" : "tx_52b632dbe418f494dabd86750e7a0012",
+      "blockNumber" : 2,
+      "eventType" : "CUSTODY_TRANSFERRED",
+      "actor" : "OFFICER-44",
+      "details" : "Custody transferred from 'OFFICER-44' to 'JUDGE-BENCH-1'. Reason: Admitted as prosecution exhibit",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 23, 740585000 ]
+    } ],
+    "txId" : "tx_2dfab22f132c1c00b16588aa6f8252a5",
+    "blockNumber" : 1,
+    "anchoredAt" : [ 2026, 9, 17, 18, 18, 23, 723199000 ]
+  },
+  "doc_test_1789649218247" : {
+    "record" : {
+      "documentId" : "doc_test_1789649218247",
+      "sha3_256" : "a3f5000000000000000000000000000000000000000000000000000000000000",
+      "blake3" : "9c2d000000000000000000000000000000000000000000000000000000000000",
+      "sha256" : "sha2560000000000000000000000000000000000000000000000000000000000",
+      "digitalSignature" : "mockBase64Signature",
+      "signatureAlgorithm" : null,
+      "signerId" : "OFFICER-44",
+      "caseId" : "CASE-SEC-2026",
+      "classification" : "TOP_SECRET",
+      "currentCustodian" : "JUDGE-BENCH-1",
+      "timestamp" : [ 2026, 9, 17, 18, 16, 58, 247701000 ]
+    },
+    "status" : "TRANSFERRED",
+    "history" : [ {
+      "txId" : "tx_fafbdce603aaf232cb793415ba6eb404",
+      "blockNumber" : 1,
+      "eventType" : "DOCUMENT_REGISTERED",
+      "actor" : "OFFICER-44",
+      "details" : "Document registered and cryptographic proofs anchored to Hyperledger Fabric",
+      "timestamp" : [ 2026, 9, 17, 18, 16, 58, 247701000 ]
+    }, {
+      "txId" : "tx_76ac68053363643a42e819352f96bc9d",
+      "blockNumber" : 2,
+      "eventType" : "CUSTODY_TRANSFERRED",
+      "actor" : "OFFICER-44",
+      "details" : "Custody transferred from 'OFFICER-44' to 'JUDGE-BENCH-1'. Reason: Admitted as prosecution exhibit",
+      "timestamp" : [ 2026, 9, 17, 18, 16, 58, 264296000 ]
+    } ],
+    "txId" : "tx_fafbdce603aaf232cb793415ba6eb404",
+    "blockNumber" : 1,
+    "anchoredAt" : [ 2026, 9, 17, 18, 16, 58, 247701000 ]
+  },
+  "doc_4cc919e86b584ca7997abad2" : {
+    "record" : {
+      "documentId" : "doc_4cc919e86b584ca7997abad2",
+      "sha3_256" : "2ce17a81f2c9e410f530e39bc3a4677489604c053e8c3a155850efb358a0506b",
+      "blake3" : "a31e02292249de8c5634c614ebffce48b5324996907ead01a4f3082c0bf767af",
+      "sha256" : "e0b81775c27f63b1539aa063a7ae089c20ca7f39a938729f80b738895c0ab977",
+      "digitalSignature" : "PHhCudhxRmpN8JiIloABN0Hfm3X81xUcVqv9HiQchdAMqinttA8SHFGBMlHbT7toyZqtZthJQPlQNq6FSgqfK1OWl3mG4YhSW3UX4oiS6knK1VfUpyLMoFYvPlTqzqSrN8y5BSDR6LWXidXIRPeV0947O5UParifX+VDbCLqyEYEHwgBlDpWYqutb8JSl+VbinvZiZpxxeQjKVi7aM4ICR8qJgaMUBNbYB4MEC9lIe4hccFVTfwrmKbfWL9/FqzPvKlDAYSbDlfdvb2nCuClNznrYXbzAdRSPiyI+V+t7SBCeLhWBrR/4VUwyQVXyMpc/32YMyO303irez9E14JPOw==",
+      "signatureAlgorithm" : "RSASSA-PSS (2048-bit RSA + SHA-256)",
+      "signerId" : "ombichare2006@gmail.com",
+      "caseId" : "case-123",
+      "classification" : "CONFIDENTIAL",
+      "currentCustodian" : "ombichare2006@gmail.com",
+      "timestamp" : [ 2026, 9, 17, 19, 18, 54, 177820000 ]
+    },
+    "status" : "ACTIVE",
+    "history" : [ {
+      "txId" : "tx_756f0cb2887d368ac73dc8314ce5c118",
+      "blockNumber" : 1,
+      "eventType" : "DOCUMENT_REGISTERED",
+      "actor" : "ombichare2006@gmail.com",
+      "details" : "Document registered and cryptographic proofs anchored to Hyperledger Fabric",
+      "timestamp" : [ 2026, 9, 17, 19, 18, 54, 177820000 ]
+    }, {
+      "txId" : "tx_d60e1e7df6045932794ae5d1d63ddb21",
+      "blockNumber" : 2,
+      "eventType" : "DOCUMENT_DOWNLOADED_V1",
+      "actor" : "ombichare2006@gmail.com",
+      "details" : "Document DOCUMENT_DOWNLOADED_V1 accessed by ombichare2006@gmail.com",
+      "timestamp" : [ 2026, 9, 17, 19, 20, 8, 585804000 ]
+    }, {
+      "txId" : "tx_2601517b684a88b4edb34a9d0e6d8979",
+      "blockNumber" : 3,
+      "eventType" : "NEW_VERSION_UPLOADED_V2",
+      "actor" : "ombichare2006@gmail.com",
+      "details" : "Document NEW_VERSION_UPLOADED_V2 accessed by ombichare2006@gmail.com",
+      "timestamp" : [ 2026, 9, 17, 19, 21, 9, 334089000 ]
+    }, {
+      "txId" : "tx_7ccca0aece2c4e0b77717b4f66576620",
+      "blockNumber" : 4,
+      "eventType" : "DOCUMENT_DOWNLOADED_V2",
+      "actor" : "ombichare2006@gmail.com",
+      "details" : "Document DOCUMENT_DOWNLOADED_V2 accessed by ombichare2006@gmail.com",
+      "timestamp" : [ 2026, 9, 17, 19, 22, 8, 96794000 ]
+    } ],
+    "txId" : "tx_756f0cb2887d368ac73dc8314ce5c118",
+    "blockNumber" : 1,
+    "anchoredAt" : [ 2026, 9, 17, 19, 18, 54, 177820000 ]
+  },
+  "doc_e9d3003469c649b7bc9c0165" : {
+    "record" : {
+      "documentId" : "doc_e9d3003469c649b7bc9c0165",
+      "sha3_256" : "410f7e35d37d1ab64559eafe0a84590d140a8003b1dbec5f48d70a6af08727ac",
+      "blake3" : "a06b861c2d6e1f67318bfde956a8970154270b59100486d362a0e30179b4a33f",
+      "sha256" : "50eb5df110ad4292d20123decbc4f3b36bb0f0d7b3bdf65825adbe45331750f6",
+      "digitalSignature" : "iE+P0p9sVptNlGdsWK35X683UEe4pedTCg7h4zD5uqK23Oii9Q2kiuX7x3LIfZovXCzl2fuJhPZQBy3ZYhsyME2wnOD3RHLCbq+ofzEJffN+oKHvFhUbbUG4MR1dVUoZyFOlhwTVqWAHfvkg0llHBu5JXkck6MS2YdsEzX/BheYUTEDqos3PDGzgVDSkFq8xiCvKDDXUELm9Q7MtPCnIKQQvxmz3CIDpipN3TZP4FAloq7gR6yurdrrXrUylfJ2RsBaW0cdhBj0KYrneJ6Lc52IPPrTv6imjJJ+/SHv+S/1n21+DGkAn/6P0Pdlgk61zuH2f7uOCTEIbG3X+3IUFsg==",
+      "signatureAlgorithm" : "RSASSA-PSS (2048-bit RSA + SHA-256)",
+      "signerId" : "OFFICER-1",
+      "caseId" : "CASE-500",
+      "classification" : "CONFIDENTIAL",
+      "currentCustodian" : "OFFICER-1",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 41, 625961000 ]
+    },
+    "status" : "ACTIVE",
+    "history" : [ {
+      "txId" : "tx_f90dd64434e8ecc96e564320c5ddb6bd",
+      "blockNumber" : 1,
+      "eventType" : "DOCUMENT_REGISTERED",
+      "actor" : "OFFICER-1",
+      "details" : "Document registered and cryptographic proofs anchored to Hyperledger Fabric",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 41, 625961000 ]
+    }, {
+      "txId" : "tx_8e13fc65e3ee42fbf64270cb5dee8bcf",
+      "blockNumber" : 2,
+      "eventType" : "NEW_VERSION_UPLOADED_V2",
+      "actor" : "OFFICER-2",
+      "details" : "Document NEW_VERSION_UPLOADED_V2 accessed by OFFICER-2",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 41, 718073000 ]
+    }, {
+      "txId" : "tx_f7715dfa944ed1cf4a260d7fdd76b500",
+      "blockNumber" : 3,
+      "eventType" : "DOCUMENT_DOWNLOADED_V1",
+      "actor" : "OFFICER-1",
+      "details" : "Document DOCUMENT_DOWNLOADED_V1 accessed by OFFICER-1",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 41, 769906000 ]
+    }, {
+      "txId" : "tx_73253fb0b598bf54326b28937e18e1f1",
+      "blockNumber" : 4,
+      "eventType" : "DOCUMENT_DOWNLOADED_V2",
+      "actor" : "OFFICER-2",
+      "details" : "Document DOCUMENT_DOWNLOADED_V2 accessed by OFFICER-2",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 41, 782439000 ]
+    } ],
+    "txId" : "tx_f90dd64434e8ecc96e564320c5ddb6bd",
+    "blockNumber" : 1,
+    "anchoredAt" : [ 2026, 9, 17, 18, 18, 41, 625961000 ]
+  },
+  "doc_9edc47795cbd4b9f9d42ad03" : {
+    "record" : {
+      "documentId" : "doc_9edc47795cbd4b9f9d42ad03",
+      "sha3_256" : "2ce17a81f2c9e410f530e39bc3a4677489604c053e8c3a155850efb358a0506b",
+      "blake3" : "a31e02292249de8c5634c614ebffce48b5324996907ead01a4f3082c0bf767af",
+      "sha256" : "e0b81775c27f63b1539aa063a7ae089c20ca7f39a938729f80b738895c0ab977",
+      "digitalSignature" : "8paYRvcz1L2TYQrmNfbg1fn7jX1YBp2lSs8nuk9H9odlDJF+3DNGpkk0+1xVqqeM5ljVQZcNe+U2DJlHuhvWaDN5Qxt9hyrp/4fbMYjIwkb3Zz+BNV9xgB08Gqz0P0r8QWtmERHkQOijlN0enUbYceef4UqklbWH8o7Xy0pq5Whu8uCdSMm+M9HA/cFJ6UxYelJosR2/V/datk29GLMClk6uJk61XdF0D6Gvb7zj/R9i9D0iBW1HQ7sFTqrRfeKJhNLvPvqQf+qnHr/T7XVwljAaFtz0jpXyDW7x5Q5Dczy58QWAaSkQndL61O1cb81RPB6x5V7aT9KM1XVsP3qlIA==",
+      "signatureAlgorithm" : "RSASSA-PSS (2048-bit RSA + SHA-256)",
+      "signerId" : "ombichare2006@gmail.com",
+      "caseId" : "case-786",
+      "classification" : "CONFIDENTIAL",
+      "currentCustodian" : "ombichare2006@gmail.com",
+      "timestamp" : [ 2026, 9, 17, 19, 0, 59, 258384000 ]
+    },
+    "status" : "ACTIVE",
+    "history" : [ {
+      "txId" : "tx_6cfdffc56c0978930480b81803db5455",
+      "blockNumber" : 1,
+      "eventType" : "DOCUMENT_REGISTERED",
+      "actor" : "ombichare2006@gmail.com",
+      "details" : "Document registered and cryptographic proofs anchored to Hyperledger Fabric",
+      "timestamp" : [ 2026, 9, 17, 19, 0, 59, 258384000 ]
+    } ],
+    "txId" : "tx_6cfdffc56c0978930480b81803db5455",
+    "blockNumber" : 1,
+    "anchoredAt" : [ 2026, 9, 17, 19, 0, 59, 258384000 ]
+  },
+  "doc_69df1c7c695f40c58e8c9cae" : {
+    "record" : {
+      "documentId" : "doc_69df1c7c695f40c58e8c9cae",
+      "sha3_256" : "19042d51c2d76a11680f27f6e5eac2b6958283895e7fe3f9f1975899ac12f3f0",
+      "blake3" : "0ced2d1b2d14f3d8882af1e43dff740eb1fca29c1077ad911382160bd0519b0f",
+      "sha256" : "8182159f2f013af84cb704f6d330ec31f96f96427b0a5227913242a070e3bbef",
+      "digitalSignature" : "HGa2gOhffuDXcMXcWQ+g1+lcCXlfuFD6iqe/UfVlaJHf2XKnG0REhWkA9J5EOJysR5x+kyr4gMcwXazlGK6jprfkFE/TfqVm9Pmtaj+r/FVMFGs6GDGtW3CjOPq37sHNCa2SGcgT7dZRHgX1M6ZhmSrg52HZvtV3xbYr26DQipVA/h9c85AoStyVtWwrjmugX3JYEERLqR+Q2ykep8/ilJnNEnOMpiw4llZ5K2QDYcOFDG3RW+UpfyG1CRJGh7wjAW7Vhn2kZ556+HjN6gn1dfg424akEHkK/qTDPffnZZJ9LZ0tfpCmlleFR64QxGwktXYggwRD/jvrhah8jQDt9g==",
+      "signatureAlgorithm" : "RSASSA-PSS (2048-bit RSA + SHA-256)",
+      "signerId" : "OFFICER-TEST",
+      "caseId" : "CASE-SEC-2026",
+      "classification" : "CONFIDENTIAL",
+      "currentCustodian" : "OFFICER-TEST",
+      "timestamp" : [ 2026, 9, 17, 19, 11, 48, 988755000 ]
+    },
+    "status" : "ACTIVE",
+    "history" : [ {
+      "txId" : "tx_f0465e660e96ef5728e3c3fb4c719b4e",
+      "blockNumber" : 3,
+      "eventType" : "DOCUMENT_REGISTERED",
+      "actor" : "OFFICER-TEST",
+      "details" : "Document registered and cryptographic proofs anchored to Hyperledger Fabric",
+      "timestamp" : [ 2026, 9, 17, 19, 11, 48, 988755000 ]
+    }, {
+      "txId" : "tx_e9fe295b7347ce8311305e9fd82ffa51",
+      "blockNumber" : 4,
+      "eventType" : "DOCUMENT_DOWNLOADED_V1",
+      "actor" : "OFFICER-TEST",
+      "details" : "Document DOCUMENT_DOWNLOADED_V1 accessed by OFFICER-TEST",
+      "timestamp" : [ 2026, 9, 17, 19, 11, 49, 61878000 ]
+    } ],
+    "txId" : "tx_f0465e660e96ef5728e3c3fb4c719b4e",
+    "blockNumber" : 3,
+    "anchoredAt" : [ 2026, 9, 17, 19, 11, 48, 988755000 ]
+  },
+  "doc_34544c984de948639cd38f02" : {
+    "record" : {
+      "documentId" : "doc_34544c984de948639cd38f02",
+      "sha3_256" : "f9cdd4d5880b5e1ef5cdf23e11d1be5066681e7fe5750b336cd1becb33dc5ccf",
+      "blake3" : "b0776dc60d82ea14b3c4ea97238b2ba61055e6c35a4421dd281616b966223ad6",
+      "sha256" : "77fee307f9ca7d0d07343dcf9992081a728db3330380e19eb2c86c89be19ccb0",
+      "digitalSignature" : "T0yhZeRXVCTZXvDHxvMzXKes15Ge6kqrouAj3AXqKlbEx16WzaaI6wsb4/ngm6NfqAe95VSgC/IW6hhnek6yUGD0A0/VcgSil0rL6672cSVa+lpajreNzIZAHDdWcjRdTuCglkJYrjYS9suqfV7XXP57P/o/+fn10l8ntqYLU1ZAQRXiON1fyPgdx6NidaumWfIN2dXzkn0qK5JDMiD/3sqL30LM3MtG/Hf6i4Csz7oqqzjIwU5Bk5Be8brMbIQMkN22679hiQMlcY/jQTDePUKTBTWBNRU7ywRY6ifysCBpJ9rtN0qIG7rqwt1MWiM4AdCvoKqTiW2T8BSEDQ6gTQ==",
+      "signatureAlgorithm" : "RSASSA-PSS (2048-bit RSA + SHA-256)",
+      "signerId" : "USER-42",
+      "caseId" : "CASE-202",
+      "classification" : "CONFIDENTIAL",
+      "currentCustodian" : "USER-42",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 41, 881453000 ]
+    },
+    "status" : "ACTIVE",
+    "history" : [ {
+      "txId" : "tx_5934db28903d9baa2fb661008ed821fd",
+      "blockNumber" : 5,
+      "eventType" : "DOCUMENT_REGISTERED",
+      "actor" : "USER-42",
+      "details" : "Document registered and cryptographic proofs anchored to Hyperledger Fabric",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 41, 881453000 ]
+    } ],
+    "txId" : "tx_5934db28903d9baa2fb661008ed821fd",
+    "blockNumber" : 5,
+    "anchoredAt" : [ 2026, 9, 17, 18, 18, 41, 881453000 ]
+  },
+  "doc_1015d10a4a4742cda4badc19" : {
+    "record" : {
+      "documentId" : "doc_1015d10a4a4742cda4badc19",
+      "sha3_256" : "19042d51c2d76a11680f27f6e5eac2b6958283895e7fe3f9f1975899ac12f3f0",
+      "blake3" : "0ced2d1b2d14f3d8882af1e43dff740eb1fca29c1077ad911382160bd0519b0f",
+      "sha256" : "8182159f2f013af84cb704f6d330ec31f96f96427b0a5227913242a070e3bbef",
+      "digitalSignature" : "8hFREwiQdJJ0O/E8Z3gc4tY1eB8zrJwCtIpYWvmZXqXFlhgXnsfXALqed7rDN8Gw9SxYW+u3Jmn7078ma3u8XMdcA8YhC+uknj8zgCTq9c+M4pGm/kopAb7mfrmwOeSIwvN0S9cBmaSW19tH6wTl2I7SKYNwzneqe7dxBOtkmuTrqBUh0QqN/hiewCFL4oszu2uSxbWYCiHIxhFgK622qcMdvwtI+lzYY5Zj5voy/WG1KLKxfG7qnnQGrd6lsJ1RkTnAGUYmkwyo14T6vMSskum6gmyrYwRXBU1dJ+z9tfzadCAK/3GfeKNU5PJIsIE7EH9/c8yZfKnTGUDn5bS6IA==",
+      "signatureAlgorithm" : "RSASSA-PSS (2048-bit RSA + SHA-256)",
+      "signerId" : "OFFICER-TEST",
+      "caseId" : "CASE-SEC-2026",
+      "classification" : "CONFIDENTIAL",
+      "currentCustodian" : "OFFICER-TEST",
+      "timestamp" : [ 2026, 9, 17, 18, 16, 58, 349010000 ]
+    },
+    "status" : "ACTIVE",
+    "history" : [ {
+      "txId" : "tx_e6bf62e4b0f719101ac6e57f9aaa2026",
+      "blockNumber" : 3,
+      "eventType" : "DOCUMENT_REGISTERED",
+      "actor" : "OFFICER-TEST",
+      "details" : "Document registered and cryptographic proofs anchored to Hyperledger Fabric",
+      "timestamp" : [ 2026, 9, 17, 18, 16, 58, 349010000 ]
+    } ],
+    "txId" : "tx_e6bf62e4b0f719101ac6e57f9aaa2026",
+    "blockNumber" : 3,
+    "anchoredAt" : [ 2026, 9, 17, 18, 16, 58, 349010000 ]
+  },
+  "doc_ff9391ec74cf4f2f8f5cc4b4" : {
+    "record" : {
+      "documentId" : "doc_ff9391ec74cf4f2f8f5cc4b4",
+      "sha3_256" : "19042d51c2d76a11680f27f6e5eac2b6958283895e7fe3f9f1975899ac12f3f0",
+      "blake3" : "0ced2d1b2d14f3d8882af1e43dff740eb1fca29c1077ad911382160bd0519b0f",
+      "sha256" : "8182159f2f013af84cb704f6d330ec31f96f96427b0a5227913242a070e3bbef",
+      "digitalSignature" : "CVtU+I0sdYE9vyTQswTcKFxIUDluPpBM3HbuygChXJq0J0nYWSUiacATMogGYkLJWXLurhZLoj6V6Y7DGngowpkZGyQPk6bzMx6n3qhl9hvJ+xU8z1hqo7YmczTgql/klNuYPWwWO1bZLbvHwlEgW3GZnL+cWRTeQUv+8GFqhogklynwPpU2STipvK48omz52lS6WePB7XtjLohPdPYWXjNRDZFHM9dumxYm2UP4K9YpsiZyU8tVK3frWdfQ8a9ApODrHFmrWc00/BbeNQw26Teg1ZRhMx/r9432ZknPyVWv+GVoP6LQ6dho29dTmsRwR6cATHM/PeEEM5pAbW+daw==",
+      "signatureAlgorithm" : "RSASSA-PSS (2048-bit RSA + SHA-256)",
+      "signerId" : "OFFICER-TEST",
+      "caseId" : "CASE-SEC-2026",
+      "classification" : "CONFIDENTIAL",
+      "currentCustodian" : "OFFICER-TEST",
+      "timestamp" : [ 2026, 9, 17, 18, 19, 40, 496584000 ]
+    },
+    "status" : "ACTIVE",
+    "history" : [ {
+      "txId" : "tx_5b9624452f088f9b35366a0a6ca41615",
+      "blockNumber" : 10,
+      "eventType" : "DOCUMENT_REGISTERED",
+      "actor" : "OFFICER-TEST",
+      "details" : "Document registered and cryptographic proofs anchored to Hyperledger Fabric",
+      "timestamp" : [ 2026, 9, 17, 18, 19, 40, 496584000 ]
+    }, {
+      "txId" : "tx_d7f730ac885359b904b355e137f8fa77",
+      "blockNumber" : 11,
+      "eventType" : "DOCUMENT_DOWNLOADED_V1",
+      "actor" : "OFFICER-TEST",
+      "details" : "Document DOCUMENT_DOWNLOADED_V1 accessed by OFFICER-TEST",
+      "timestamp" : [ 2026, 9, 17, 18, 19, 40, 514704000 ]
+    } ],
+    "txId" : "tx_5b9624452f088f9b35366a0a6ca41615",
+    "blockNumber" : 10,
+    "anchoredAt" : [ 2026, 9, 17, 18, 19, 40, 496584000 ]
+  },
+  "doc_d28d734b36454657a00aa603" : {
+    "record" : {
+      "documentId" : "doc_d28d734b36454657a00aa603",
+      "sha3_256" : "19042d51c2d76a11680f27f6e5eac2b6958283895e7fe3f9f1975899ac12f3f0",
+      "blake3" : "0ced2d1b2d14f3d8882af1e43dff740eb1fca29c1077ad911382160bd0519b0f",
+      "sha256" : "8182159f2f013af84cb704f6d330ec31f96f96427b0a5227913242a070e3bbef",
+      "digitalSignature" : "W3fo+DnN4Z5yzqFd7mK+csFtPdMJEd8dHuQ30/Gqk6INdx6lYE/j2XnxTnGBMH/r458ZfqttiwD2+VxqCcZs/arkv09BD+Ihact/u/tTkpsRflCtzX+Etq6QX8NkNuvbTicTOIPgOPmfp8Leap1tBjlH8kh5prpvPPTA3hCDivEJ/2fdUKEjl2CpHbmHVG4BK2kJqWYaEbaETeOA31YGPuJeUbl1+n3s7H/9LzV/VkKWjHQGvt1cAomCYkrRJe/B0UX+gl0n5BEVO2dBFOQGc3LmXpn7paRKXSDzQ8eiMN64986QTTA3Ttx0jn44Ss9nsTOY9FGVkuUCYpHxfOE3+g==",
+      "signatureAlgorithm" : "RSASSA-PSS (2048-bit RSA + SHA-256)",
+      "signerId" : "OFFICER-TEST",
+      "caseId" : "CASE-SEC-2026",
+      "classification" : "CONFIDENTIAL",
+      "currentCustodian" : "OFFICER-TEST",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 23, 813914000 ]
+    },
+    "status" : "ACTIVE",
+    "history" : [ {
+      "txId" : "tx_612f4731afe26aa1f7330c575fa5ed3e",
+      "blockNumber" : 3,
+      "eventType" : "DOCUMENT_REGISTERED",
+      "actor" : "OFFICER-TEST",
+      "details" : "Document registered and cryptographic proofs anchored to Hyperledger Fabric",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 23, 813914000 ]
+    }, {
+      "txId" : "tx_61089fc517df7609b00712c02bdbf7a1",
+      "blockNumber" : 4,
+      "eventType" : "DOCUMENT_DOWNLOADED_V1",
+      "actor" : "OFFICER-TEST",
+      "details" : "Document DOCUMENT_DOWNLOADED_V1 accessed by OFFICER-TEST",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 23, 876229000 ]
+    } ],
+    "txId" : "tx_612f4731afe26aa1f7330c575fa5ed3e",
+    "blockNumber" : 3,
+    "anchoredAt" : [ 2026, 9, 17, 18, 18, 23, 813914000 ]
+  },
+  "doc_test_1789649380470" : {
+    "record" : {
+      "documentId" : "doc_test_1789649380470",
+      "sha3_256" : "a3f5000000000000000000000000000000000000000000000000000000000000",
+      "blake3" : "9c2d000000000000000000000000000000000000000000000000000000000000",
+      "sha256" : "sha2560000000000000000000000000000000000000000000000000000000000",
+      "digitalSignature" : "mockBase64Signature",
+      "signatureAlgorithm" : null,
+      "signerId" : "OFFICER-44",
+      "caseId" : "CASE-SEC-2026",
+      "classification" : "TOP_SECRET",
+      "currentCustodian" : "JUDGE-BENCH-1",
+      "timestamp" : [ 2026, 9, 17, 18, 19, 40, 470384000 ]
+    },
+    "status" : "TRANSFERRED",
+    "history" : [ {
+      "txId" : "tx_c6b21d08dbebdc825b198a9e01f09e0e",
+      "blockNumber" : 8,
+      "eventType" : "DOCUMENT_REGISTERED",
+      "actor" : "OFFICER-44",
+      "details" : "Document registered and cryptographic proofs anchored to Hyperledger Fabric",
+      "timestamp" : [ 2026, 9, 17, 18, 19, 40, 470384000 ]
+    }, {
+      "txId" : "tx_b0554bccc744c8b4d68abe22ed5ce4c0",
+      "blockNumber" : 9,
+      "eventType" : "CUSTODY_TRANSFERRED",
+      "actor" : "OFFICER-44",
+      "details" : "Custody transferred from 'OFFICER-44' to 'JUDGE-BENCH-1'. Reason: Admitted as prosecution exhibit",
+      "timestamp" : [ 2026, 9, 17, 18, 19, 40, 471795000 ]
+    } ],
+    "txId" : "tx_c6b21d08dbebdc825b198a9e01f09e0e",
+    "blockNumber" : 8,
+    "anchoredAt" : [ 2026, 9, 17, 18, 19, 40, 470384000 ]
+  },
+  "doc_57255e47ea0c47ea91de3377" : {
+    "record" : {
+      "documentId" : "doc_57255e47ea0c47ea91de3377",
+      "sha3_256" : "410f7e35d37d1ab64559eafe0a84590d140a8003b1dbec5f48d70a6af08727ac",
+      "blake3" : "a06b861c2d6e1f67318bfde956a8970154270b59100486d362a0e30179b4a33f",
+      "sha256" : "50eb5df110ad4292d20123decbc4f3b36bb0f0d7b3bdf65825adbe45331750f6",
+      "digitalSignature" : "a1pqCibChDsIabJoYTnnRQjtBQpX4JlZ57xI8s8fqEOJASDlJ11I0Qz1Ntehe7xrTr5vjoFWk2bx96kd54Qd/pcpTK98YsK3iEpOIgfxFY/R1AUvGDYt2gOo1SGw5eXCZDPqhDVGo/SgXU90ORQF+ey7OTYc/MS9GB7gLXAFq/yXzf8MkxmuLHq/rh5bTjhtjFj64idL8UXrgn5EeyunIEPMl5j/Ds0jan1EFfbhHQD+UTUPG0l1s/sUMY3JTsLbsN2awIPSdc150D4svlXJTN4iatS3iKR7k2ijnVoVtVyM8Rv6QzdZhVX0Z3HArwKexcsvmo77One3GESxkWWZAg==",
+      "signatureAlgorithm" : "RSASSA-PSS (2048-bit RSA + SHA-256)",
+      "signerId" : "OFFICER-1",
+      "caseId" : "CASE-500",
+      "classification" : "CONFIDENTIAL",
+      "currentCustodian" : "OFFICER-1",
+      "timestamp" : [ 2026, 9, 17, 18, 19, 39, 877252000 ]
+    },
+    "status" : "ACTIVE",
+    "history" : [ {
+      "txId" : "tx_3d24989649c8c12fdd1b57b83d79ccb1",
+      "blockNumber" : 1,
+      "eventType" : "DOCUMENT_REGISTERED",
+      "actor" : "OFFICER-1",
+      "details" : "Document registered and cryptographic proofs anchored to Hyperledger Fabric",
+      "timestamp" : [ 2026, 9, 17, 18, 19, 39, 877252000 ]
+    }, {
+      "txId" : "tx_07137fe618732ccbb0a9fcd596344fcb",
+      "blockNumber" : 2,
+      "eventType" : "NEW_VERSION_UPLOADED_V2",
+      "actor" : "OFFICER-2",
+      "details" : "Document NEW_VERSION_UPLOADED_V2 accessed by OFFICER-2",
+      "timestamp" : [ 2026, 9, 17, 18, 19, 39, 992725000 ]
+    }, {
+      "txId" : "tx_50b296b3cdfe19ff4e22bc2bee436d63",
+      "blockNumber" : 3,
+      "eventType" : "DOCUMENT_DOWNLOADED_V1",
+      "actor" : "OFFICER-1",
+      "details" : "Document DOCUMENT_DOWNLOADED_V1 accessed by OFFICER-1",
+      "timestamp" : [ 2026, 9, 17, 18, 19, 40, 45415000 ]
+    }, {
+      "txId" : "tx_d4d23958bff8db41a1a0a959bf36592b",
+      "blockNumber" : 4,
+      "eventType" : "DOCUMENT_DOWNLOADED_V2",
+      "actor" : "OFFICER-2",
+      "details" : "Document DOCUMENT_DOWNLOADED_V2 accessed by OFFICER-2",
+      "timestamp" : [ 2026, 9, 17, 18, 19, 40, 60318000 ]
+    } ],
+    "txId" : "tx_3d24989649c8c12fdd1b57b83d79ccb1",
+    "blockNumber" : 1,
+    "anchoredAt" : [ 2026, 9, 17, 18, 19, 39, 877252000 ]
+  },
+  "doc_5317cd0b6bc84f0589b31095" : {
+    "record" : {
+      "documentId" : "doc_5317cd0b6bc84f0589b31095",
+      "sha3_256" : "f9cdd4d5880b5e1ef5cdf23e11d1be5066681e7fe5750b336cd1becb33dc5ccf",
+      "blake3" : "b0776dc60d82ea14b3c4ea97238b2ba61055e6c35a4421dd281616b966223ad6",
+      "sha256" : "77fee307f9ca7d0d07343dcf9992081a728db3330380e19eb2c86c89be19ccb0",
+      "digitalSignature" : "KPZT333Y1enmfvPFWo42wllxEq5wRo1Lzb1MhHfnKbjPYHBkCSchi7IPfVSEEkmp3I/iizm8WMPc6Guot0kHPbWo6miLrSS54PvOaRx+zd9LzYJZ+XQ6s6qv4GCEksWgEdZrf1ECRBM++xnyKd0dmr8ft6A5GCniSJhB39cGzAPTQZplrSqhwRfHlftXq1pTT8L6QXZ1D/OAGwrzhq7tgWse4hVOYUlWo434UutMkMdsVGsL9m3lnJJ5xkaAIkc+B+/UkQiwSpbVQqEh2rOxlw2/69iPJkUXwiYk4xxclqnA+pYzCsbYm5KrPl70yzwZVigcYh9SChS5lnqtMkwB6A==",
+      "signatureAlgorithm" : "RSASSA-PSS (2048-bit RSA + SHA-256)",
+      "signerId" : "USER-42",
+      "caseId" : "CASE-101",
+      "classification" : "CONFIDENTIAL",
+      "currentCustodian" : "USER-42",
+      "timestamp" : [ 2026, 9, 17, 18, 19, 40, 221130000 ]
+    },
+    "status" : "ACTIVE",
+    "history" : [ {
+      "txId" : "tx_44e042d5b83c568dec18c9fea99ab8e2",
+      "blockNumber" : 6,
+      "eventType" : "DOCUMENT_REGISTERED",
+      "actor" : "USER-42",
+      "details" : "Document registered and cryptographic proofs anchored to Hyperledger Fabric",
+      "timestamp" : [ 2026, 9, 17, 18, 19, 40, 221130000 ]
+    }, {
+      "txId" : "tx_a054cd92fd167f9d6e8b020c40b4e5bd",
+      "blockNumber" : 7,
+      "eventType" : "DOCUMENT_DOWNLOADED_V1",
+      "actor" : "OFFICER-A",
+      "details" : "Document DOCUMENT_DOWNLOADED_V1 accessed by OFFICER-A",
+      "timestamp" : [ 2026, 9, 17, 18, 19, 40, 240598000 ]
+    } ],
+    "txId" : "tx_44e042d5b83c568dec18c9fea99ab8e2",
+    "blockNumber" : 6,
+    "anchoredAt" : [ 2026, 9, 17, 18, 19, 40, 221130000 ]
+  },
+  "doc_test_1789652508898" : {
+    "record" : {
+      "documentId" : "doc_test_1789652508898",
+      "sha3_256" : "a3f5000000000000000000000000000000000000000000000000000000000000",
+      "blake3" : "9c2d000000000000000000000000000000000000000000000000000000000000",
+      "sha256" : "sha2560000000000000000000000000000000000000000000000000000000000",
+      "digitalSignature" : "mockBase64Signature",
+      "signatureAlgorithm" : null,
+      "signerId" : "OFFICER-44",
+      "caseId" : "CASE-SEC-2026",
+      "classification" : "TOP_SECRET",
+      "currentCustodian" : "JUDGE-BENCH-1",
+      "timestamp" : [ 2026, 9, 17, 19, 11, 48, 899062000 ]
+    },
+    "status" : "TRANSFERRED",
+    "history" : [ {
+      "txId" : "tx_9d0787b2bf74934e324ddb09a43a2774",
+      "blockNumber" : 1,
+      "eventType" : "DOCUMENT_REGISTERED",
+      "actor" : "OFFICER-44",
+      "details" : "Document registered and cryptographic proofs anchored to Hyperledger Fabric",
+      "timestamp" : [ 2026, 9, 17, 19, 11, 48, 899062000 ]
+    }, {
+      "txId" : "tx_a7986165f07f4a5918b9cd937a94ae67",
+      "blockNumber" : 2,
+      "eventType" : "CUSTODY_TRANSFERRED",
+      "actor" : "OFFICER-44",
+      "details" : "Custody transferred from 'OFFICER-44' to 'JUDGE-BENCH-1'. Reason: Admitted as prosecution exhibit",
+      "timestamp" : [ 2026, 9, 17, 19, 11, 48, 919368000 ]
+    } ],
+    "txId" : "tx_9d0787b2bf74934e324ddb09a43a2774",
+    "blockNumber" : 1,
+    "anchoredAt" : [ 2026, 9, 17, 19, 11, 48, 899062000 ]
+  },
+  "doc_a6158456e7de4eab81c10fc4" : {
+    "record" : {
+      "documentId" : "doc_a6158456e7de4eab81c10fc4",
+      "sha3_256" : "f9cdd4d5880b5e1ef5cdf23e11d1be5066681e7fe5750b336cd1becb33dc5ccf",
+      "blake3" : "b0776dc60d82ea14b3c4ea97238b2ba61055e6c35a4421dd281616b966223ad6",
+      "sha256" : "77fee307f9ca7d0d07343dcf9992081a728db3330380e19eb2c86c89be19ccb0",
+      "digitalSignature" : "Z50WQURaWM0bmoeu/e4mHxrnZ0YHZV2woCphcP1Gs/A4OvTt8kChqn6cWyoaWau/SksCm+8GHcajNCKma5DC0r92o8Wyj48mTdAsGpM/8+rqSeeSijSlMQxpfz65T87KV6s1wWQH+zLSOqBVdprPd1Uy+d0eHtBZRfRllvtHoEzw1Q0moCjRKS04xOgFXS6JpgXEzNHmBrDfDKFy3g48hGhXeZ3C5Si6Rf0S/RJgU6hCglBnPFuWj7GJRCY8rUKybc3o3ovWEWORwi6TmUZj4oULGsC0DTTy0s2ngiPy9J9sRx7JeQVp0vdC0tq6xxyWp8IzdFks2DpR6l0lwzsVSQ==",
+      "signatureAlgorithm" : "RSASSA-PSS (2048-bit RSA + SHA-256)",
+      "signerId" : "USER-42",
+      "caseId" : "CASE-101",
+      "classification" : "CONFIDENTIAL",
+      "currentCustodian" : "USER-42",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 41, 959268000 ]
+    },
+    "status" : "ACTIVE",
+    "history" : [ {
+      "txId" : "tx_ef0f6fe21b4ff1e7f2d9030363562f6d",
+      "blockNumber" : 6,
+      "eventType" : "DOCUMENT_REGISTERED",
+      "actor" : "USER-42",
+      "details" : "Document registered and cryptographic proofs anchored to Hyperledger Fabric",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 41, 959268000 ]
+    } ],
+    "txId" : "tx_ef0f6fe21b4ff1e7f2d9030363562f6d",
+    "blockNumber" : 6,
+    "anchoredAt" : [ 2026, 9, 17, 18, 18, 41, 959268000 ]
+  },
+  "doc_test_1789649322217" : {
+    "record" : {
+      "documentId" : "doc_test_1789649322217",
+      "sha3_256" : "a3f5000000000000000000000000000000000000000000000000000000000000",
+      "blake3" : "9c2d000000000000000000000000000000000000000000000000000000000000",
+      "sha256" : "sha2560000000000000000000000000000000000000000000000000000000000",
+      "digitalSignature" : "mockBase64Signature",
+      "signatureAlgorithm" : null,
+      "signerId" : "OFFICER-44",
+      "caseId" : "CASE-SEC-2026",
+      "classification" : "TOP_SECRET",
+      "currentCustodian" : "JUDGE-BENCH-1",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 42, 218025000 ]
+    },
+    "status" : "TRANSFERRED",
+    "history" : [ {
+      "txId" : "tx_a909649a6f5ecb84766a8ee379787f1e",
+      "blockNumber" : 7,
+      "eventType" : "DOCUMENT_REGISTERED",
+      "actor" : "OFFICER-44",
+      "details" : "Document registered and cryptographic proofs anchored to Hyperledger Fabric",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 42, 218025000 ]
+    }, {
+      "txId" : "tx_481afa4641273545c7a40871a61fa74e",
+      "blockNumber" : 8,
+      "eventType" : "CUSTODY_TRANSFERRED",
+      "actor" : "OFFICER-44",
+      "details" : "Custody transferred from 'OFFICER-44' to 'JUDGE-BENCH-1'. Reason: Admitted as prosecution exhibit",
+      "timestamp" : [ 2026, 9, 17, 18, 18, 42, 219721000 ]
+    } ],
+    "txId" : "tx_a909649a6f5ecb84766a8ee379787f1e",
+    "blockNumber" : 7,
+    "anchoredAt" : [ 2026, 9, 17, 18, 18, 42, 218025000 ]
+  },
+  "doc_f034a62ecfff4494bf4690e0" : {
+    "record" : {
+      "documentId" : "doc_f034a62ecfff4494bf4690e0",
+      "sha3_256" : "f9cdd4d5880b5e1ef5cdf23e11d1be5066681e7fe5750b336cd1becb33dc5ccf",
+      "blake3" : "b0776dc60d82ea14b3c4ea97238b2ba61055e6c35a4421dd281616b966223ad6",
+      "sha256" : "77fee307f9ca7d0d07343dcf9992081a728db3330380e19eb2c86c89be19ccb0",
+      "digitalSignature" : "sG0ziTxAxeOwe+PJMIWZp2j6r4qzSJRK8pz95QnTRBJKcbqMZ6+D1RM7QzXP7LxethyTsCkfbav/2caSJ3E8+LXuEMmTrmBTFZOapvR92w7QkqpC8BEVSKJPce7/I/rO4T1dlzvQyQJ/7swAbhi8VLLx1UrEK9NyVglPWmnN3yicEjwtZofnuHIYgTFITGC7H0G99ZADcS0/z/KytILaoK1NffOFcTuaT19rxAS+yuqaHs0CKJZEAux426IhJgGxMublFywO69ODwrvFXn0bPXdW21TbytPTT99YK6CmjcEuBc/4sj1Jzw4YktfZw1VtN2o7Um71rBZBUy7fALSk4g==",
+      "signatureAlgorithm" : "RSASSA-PSS (2048-bit RSA + SHA-256)",
+      "signerId" : "USER-42",
+      "caseId" : "CASE-202",
+      "classification" : "CONFIDENTIAL",
+      "currentCustodian" : "USER-42",
+      "timestamp" : [ 2026, 9, 17, 18, 19, 40, 149324000 ]
+    },
+    "status" : "ACTIVE",
+    "history" : [ {
+      "txId" : "tx_f65e3ce6b50c22d6e4dab0bf718834a8",
+      "blockNumber" : 5,
+      "eventType" : "DOCUMENT_REGISTERED",
+      "actor" : "USER-42",
+      "details" : "Document registered and cryptographic proofs anchored to Hyperledger Fabric",
+      "timestamp" : [ 2026, 9, 17, 18, 19, 40, 149324000 ]
+    } ],
+    "txId" : "tx_f65e3ce6b50c22d6e4dab0bf718834a8",
+    "blockNumber" : 5,
+    "anchoredAt" : [ 2026, 9, 17, 18, 19, 40, 149324000 ]
+  }
+}
