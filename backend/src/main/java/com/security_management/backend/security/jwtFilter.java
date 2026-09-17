@@ -43,36 +43,42 @@ public class jwtFilter extends OncePerRequestFilter {
              return;
          }
 
-        token=tokenHeader.substring(7);
+         token = tokenHeader.substring(7);
 
-         if(token==null){
-             throw new RuntimeException("No Token Present ");
+         if (token == null || token.trim().isEmpty()) {
+             filterChain.doFilter(request, response);
+             return;
          }
-         username=authUtl.extractUserName(token);
-        if(token!=null){
-//            Optional<Token> tokenOpt = tokenRespository.findByToken(token);
 
-            if (token.isEmpty() || authUtl.isTokenExpired(token)) {
+         try {
+             username = authUtl.extractUserName(token);
+         } catch (io.jsonwebtoken.ExpiredJwtException ex) {
+             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+             response.setContentType("application/json");
+             response.getWriter().write("{\"error\":\"UNAUTHORIZED\",\"message\":\"Your login session has expired. Please sign in again.\"}");
+             return;
+         } catch (Exception ex) {
+             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+             response.setContentType("application/json");
+             response.getWriter().write("{\"error\":\"UNAUTHORIZED\",\"message\":\"Invalid authorization token.\"}");
+             return;
+         }
 
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return; // stop request
-            }
-        }
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+             try {
+                 UserDetails userDetails = context.getBean(userDetailSevice.class).loadUserByUsername(username);
+                 if (authUtl.validate(token, userDetails)) {
+                     UsernamePasswordAuthenticationToken authToken =
+                             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                 }
+             } catch (Exception ignored) {
+                 // User from token not found in database; let request proceed unauthenticated
+             }
+         }
 
-            UserDetails userDetails=context.getBean(userDetailSevice.class).loadUserByUsername(username);
-            if (authUtl.validate(token,userDetails)){
-                UsernamePasswordAuthenticationToken authToken=
-                        new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities());
-
-                // now we are assigning the token to SecurityContextHolder
-
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
-        }
-
-        filterChain.doFilter(request,response);
+         filterChain.doFilter(request, response);
 
 
     }
