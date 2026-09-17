@@ -16,6 +16,10 @@ public class UploadDocumentResponse {
     private Integer version;
     private String status;
     private String sha256;
+    private String sha3_256;
+    private String blake3;
+    private String blockchainTxId;
+    private Long blockchainBlockNumber;
     private String objectKey;
     private String originalFilename;
     private Long fileSize;

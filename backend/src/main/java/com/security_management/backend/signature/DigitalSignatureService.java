@@ -1,5 +1,6 @@
 package com.security_management.backend.signature;
 
+import com.security_management.backend.hashing.DualHashResult;
 import jakarta.annotation.PostConstruct;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
@@ -7,16 +8,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.security.*;
-import java.security.spec.MGF1ParameterSpec;
-import java.security.spec.PSSParameterSpec;
-import java.util.Base64;
-
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.*;
+import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.PSSParameterSpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 
 @Service
 public class DigitalSignatureService {
@@ -69,6 +70,9 @@ public class DigitalSignatureService {
         }
     }
 
+    /**
+     * Sign raw bytes using RSASSA-PSS.
+     */
     public String sign(byte[] data) {
         try {
             Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM);
@@ -90,6 +94,17 @@ public class DigitalSignatureService {
         }
     }
 
+    /**
+     * Step 3.B: Sign the dual cryptographic hash (SHA3-256:BLAKE3) using Officer Private Key.
+     */
+    public String signDualHash(DualHashResult dualHash) {
+        String payload = dualHash.getCombinedHash();
+        return sign(payload.getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Verify RSASSA-PSS digital signature over raw bytes.
+     */
     public boolean verify(byte[] data, String signatureBase64) {
         if (signatureBase64 == null || data == null) {
             return false;
@@ -114,11 +129,26 @@ public class DigitalSignatureService {
         }
     }
 
+    /**
+     * Verify signature over dual hash string.
+     */
+    public boolean verifyDualHashSignature(DualHashResult dualHash, String signatureBase64) {
+        if (dualHash == null || signatureBase64 == null) {
+            return false;
+        }
+        String payload = dualHash.getCombinedHash();
+        return verify(payload.getBytes(StandardCharsets.UTF_8), signatureBase64);
+    }
+
     public String getSignatureAlgorithm() {
-        return "RSA-PSS + SHA-256";
+        return "RSASSA-PSS (2048-bit RSA + SHA-256)";
     }
 
     public PublicKey getPublicKey() {
         return keyPair.getPublic();
+    }
+
+    public String getPublicKeyBase64() {
+        return Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded());
     }
 }

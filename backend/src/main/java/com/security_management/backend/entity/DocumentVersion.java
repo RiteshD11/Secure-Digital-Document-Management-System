@@ -35,6 +35,18 @@ public class DocumentVersion {
     @Column(name = "original_sha256", length = 64, nullable = false)
     private String originalSha256;
 
+    @Column(name = "sha3_256", length = 64)
+    private String sha3_256;
+
+    @Column(name = "blake3", length = 64)
+    private String blake3;
+
+    @Column(name = "blockchain_tx_id", length = 128)
+    private String blockchainTxId;
+
+    @Column(name = "blockchain_block_number")
+    private Long blockchainBlockNumber;
+
     @Column(name = "encryption_algorithm", length = 64)
     private String encryptionAlgorithm;
 
