@@ -1,0 +1,1 @@
+"""Independent face-recognition application module."""
