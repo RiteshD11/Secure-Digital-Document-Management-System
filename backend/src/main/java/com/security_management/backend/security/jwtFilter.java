@@ -37,39 +37,43 @@ public class jwtFilter extends OncePerRequestFilter {
         String token = null;
         String username = null;
 
-        if (tokenHeader == null || !tokenHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+         token = tokenHeader.substring(7);
 
-        token = tokenHeader.substring(7);
+         if (token == null || token.trim().isEmpty()) {
+             filterChain.doFilter(request, response);
+             return;
+         }
 
-        if (token == null) {
-            throw new RuntimeException("No Token Present ");
-        }
-        try {
-            username = authUtl.extractUserName(token);
-            if (token.isEmpty() || authUtl.isTokenExpired(token)) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
-            }
+         try {
+             username = authUtl.extractUserName(token);
+         } catch (io.jsonwebtoken.ExpiredJwtException ex) {
+             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+             response.setContentType("application/json");
+             response.getWriter().write("{\"error\":\"UNAUTHORIZED\",\"message\":\"Your login session has expired. Please sign in again.\"}");
+             return;
+         } catch (Exception ex) {
+             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+             response.setContentType("application/json");
+             response.getWriter().write("{\"error\":\"UNAUTHORIZED\",\"message\":\"Invalid authorization token.\"}");
+             return;
+         }
 
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailSevice.loadUserByUsername(username);
-                if (authUtl.validate(token, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
-                            null, userDetails.getAuthorities());
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
-            }
-        } catch (Exception e) {
-            // Invalid, expired token or user not found in DB - clear security context and
-            // continue filter chain
-            SecurityContextHolder.clearContext();
-        }
+         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+             try {
+                 UserDetails userDetails = context.getBean(userDetailSevice.class).loadUserByUsername(username);
+                 if (authUtl.validate(token, userDetails)) {
+                     UsernamePasswordAuthenticationToken authToken =
+                             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                 }
+             } catch (Exception ignored) {
+                 // User from token not found in database; let request proceed unauthenticated
+             }
+         }
 
-        filterChain.doFilter(request, response);
+         filterChain.doFilter(request, response);
+
 
     }
 }

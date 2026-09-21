@@ -201,6 +201,84 @@ public class DocumentController {
 
     /**
      * Forensic Multi-Point Verification: GET /api/documents/{id}/verify
+     * Secure Viewing Session API: GET /api/documents/{id}/view-session
+     * Generates dynamic viewing watermark metadata and records an immutable forensic audit event.
+     */
+    @GetMapping("/documents/{id}/view-session")
+    public ResponseEntity<Map<String, Object>> getViewSession(
+            @PathVariable("id") String documentId,
+            @RequestParam(value = "version", required = false) Integer version,
+            HttpServletRequest request) {
+
+        String clientIp = request.getRemoteAddr();
+        String userId = requireAuthenticatedUser();
+
+        Document document = documentRepository.findById(documentId)
+                .orElseThrow(() -> new DocumentNotFoundException("Document not found: " + documentId));
+        caseAccessService.requireCaseAccess(document.getCaseId(), userId);
+
+        String sessionToken = java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 6).toUpperCase();
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        String formattedTimestamp = now.format(java.time.format.DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:mm"));
+
+        auditService.logEvent(userId, documentId, document.getCaseId(),
+                "DOCUMENT_VIEWED", "SUCCESS", clientIp,
+                "Secure viewing session generated (session: " + sessionToken + ")");
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("sessionToken", sessionToken);
+        response.put("caseId", document.getCaseId());
+        response.put("documentId", document.getId());
+        response.put("documentTitle", document.getOriginalFilename());
+        response.put("classification", document.getClassification());
+        response.put("userIdentifier", userId);
+        response.put("timestamp", formattedTimestamp);
+        response.put("watermarkLines", List.of(
+                document.getClassification() != null ? document.getClassification() : "CONFIDENTIAL",
+                "CASE: " + document.getCaseId(),
+                "DOCUMENT: " + document.getId(),
+                "USER: " + userId,
+                "SESSION: " + sessionToken,
+                "TIMESTAMP: " + formattedTimestamp
+        ));
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * In-Browser Document Preview API: GET /api/documents/{id}/preview
+     * Streams decrypted document content with inline content disposition for secure browser rendering.
+     */
+    @GetMapping("/documents/{id}/preview")
+    public ResponseEntity<Resource> previewDocument(
+            @PathVariable("id") String documentId,
+            @RequestParam(value = "version", required = false) Integer version,
+            HttpServletRequest request) {
+
+        String clientIp = request.getRemoteAddr();
+        String userId = requireAuthenticatedUser();
+
+        Document document = documentRepository.findById(documentId)
+                .orElseThrow(() -> new DocumentNotFoundException("Document not found: " + documentId));
+        caseAccessService.requireCaseAccess(document.getCaseId(), userId);
+
+        DocumentDownloadService.DecryptedDocument doc = documentDownloadService
+                .downloadAndDecrypt(documentId, version, userId, clientIp);
+
+        ByteArrayResource resource = new ByteArrayResource(doc.getContent());
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(doc.getMimeType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + doc.getFilename() + "\"")
+                .header("X-DMS-SHA256", doc.getSha256())
+                .header("X-DMS-Integrity-Verified", String.valueOf(doc.isIntegrityVerified()))
+                .header("X-DMS-Signature-Valid", String.valueOf(doc.isSignatureValid()))
+                .header("X-DMS-Version", String.valueOf(doc.getVersion()))
+                .body(resource);
+    }
+
+    /**
+     * Phase 25: GET /api/documents/{id}/verify
      */
     @GetMapping("/documents/{id}/verify")
     public ResponseEntity<DocumentVerificationResponse> verifyDocument(
