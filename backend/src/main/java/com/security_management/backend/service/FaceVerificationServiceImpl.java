@@ -64,7 +64,20 @@ public class FaceVerificationServiceImpl implements FaceVerificationService {
             if (fastApiService != null && userId != null && !userId.isBlank()) {
                 try {
                     log.info("Attempting biometric verification with FastAPI AI service for user: {}", userId);
-                    Map<String, Object> fastApiResponse = fastApiService.verifyFace(userId, livePhoto, "live_capture.jpg", "image/jpeg");
+                    Map<String, Object> fastApiResponse = null;
+                    try {
+                        fastApiResponse = fastApiService.verifyFace(userId, livePhoto, "live_capture.jpg", "image/jpeg");
+                    } catch (Exception e) {
+                        if (e.getMessage() != null && e.getMessage().contains("404")) {
+                            log.info("Face not found on FastAPI for user {}. Attempting to re-register with reference photo...", userId);
+                            fastApiService.registerFace(userId, referencePhoto, "reference.jpg");
+                            log.info("Successfully re-registered face. Retrying verification...");
+                            fastApiResponse = fastApiService.verifyFace(userId, livePhoto, "live_capture.jpg", "image/jpeg");
+                        } else {
+                            throw e;
+                        }
+                    }
+
                     if (fastApiResponse != null) {
                         log.info("FastAPI verification response: {}", fastApiResponse);
                         boolean isMatch = Boolean.TRUE.equals(fastApiResponse.get("verified"))
