@@ -73,6 +73,17 @@ public class FastApiConfig {
         return normalized;
     }
 
+    @Value("${fastapi.api.key:}")
+    private String apiKey;
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
     @Bean(name = "fastApiRestTemplate")
     public RestTemplate fastApiRestTemplate() {
         log.info("Configuring FastAPI RestTemplate with normalized base URL: {}, connectTimeout: {}ms, readTimeout: {}ms",
@@ -82,7 +93,17 @@ public class FastApiConfig {
         requestFactory.setConnectTimeout(connectTimeoutMs);
         requestFactory.setReadTimeout(readTimeoutMs);
 
-        return new RestTemplate(requestFactory);
+        RestTemplate restTemplate = new RestTemplate(requestFactory);
+        restTemplate.getInterceptors().add((request, body, execution) -> {
+            if (apiKey != null && !apiKey.trim().isEmpty()) {
+                request.getHeaders().set("X-API-Key", apiKey.trim());
+                // Also set Authorization as Bearer if it expects that instead
+                request.getHeaders().set("Authorization", "Bearer " + apiKey.trim());
+            }
+            return execution.execute(request, body);
+        });
+        
+        return restTemplate;
     }
 
     @Bean

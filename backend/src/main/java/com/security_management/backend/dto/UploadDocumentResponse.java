@@ -30,4 +30,5 @@ public class UploadDocumentResponse {
     private String signatureAlgorithm;
     private String encryptionAlgorithm;
     private LocalDateTime createdAt;
+    private LocalDateTime tsaTimestamp;
 }

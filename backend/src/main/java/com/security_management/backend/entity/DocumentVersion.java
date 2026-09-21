@@ -86,6 +86,12 @@ public class DocumentVersion {
     @Column(name = "mime_type", length = 128)
     private String mimeType;
 
+    @Column(name = "tsa_token", columnDefinition = "TEXT")
+    private String tsaToken;
+
+    @Column(name = "tsa_timestamp")
+    private LocalDateTime tsaTimestamp;
+
     @PrePersist
     public void prePersist() {
         if (this.createdAt == null) {
