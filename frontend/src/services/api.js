@@ -79,17 +79,65 @@ export function setCurrentUserRole(roleKey) {
   return currentUser;
 }
 
-function apiFetch(url, options = {}) {
-  const token = typeof window !== 'undefined'
-    ? JSON.parse(localStorage.getItem('dms_officer') || 'null')?.token
-    : null;
-  const headers = new Headers(options.headers || {});
+export function isTokenExpired(token) {
+  if (!token) return true;
+  try {
+    const parts = token.split('.');
+    if (parts.length < 2) return true;
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    const payload = JSON.parse(jsonPayload);
+    if (payload.exp && Date.now() >= payload.exp * 1000) {
+      return true;
+    }
+    return false;
+  } catch (e) {
+    return true;
+  }
+}
 
+async function apiFetch(url, options = {}) {
+  const rawOfficer = typeof window !== 'undefined'
+    ? localStorage.getItem('dms_officer')
+    : null;
+  let token = null;
+  if (rawOfficer) {
+    try {
+      token = JSON.parse(rawOfficer)?.token;
+    } catch (e) {}
+  }
+
+  if (token && isTokenExpired(token)) {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('dms_officer');
+      window.dispatchEvent(new CustomEvent('dms_session_expired', {
+        detail: { message: 'Your login session has expired. Please authenticate to continue.' }
+      }));
+    }
+    throw new Error('Your login session has expired. Please sign in again.');
+  }
+
+  const headers = new Headers(options.headers || {});
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  return fetch(url, { ...options, headers });
+  const res = await fetch(url, { ...options, headers });
+  if (res.status === 401) {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('dms_officer');
+      window.dispatchEvent(new CustomEvent('dms_session_expired', {
+        detail: { message: 'Session expired or authorization required. Please sign in again.' }
+      }));
+    }
+  }
+  return res;
 }
 
 /* ----------------------------------------------------
@@ -235,8 +283,17 @@ export const docApi = {
       body: formData
     });
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: 'Upload failed' }));
-      throw new Error(err.message || 'Document upload & encryption failed');
+      let errMsg = 'Document upload & encryption failed';
+      try {
+        const err = await res.json();
+        errMsg = err.message || err.error || errMsg;
+      } catch {
+        try {
+          const txt = await res.text();
+          if (txt && txt.length < 250) errMsg = txt;
+        } catch (_) {}
+      }
+      throw new Error(errMsg);
     }
     return await res.json();
   },
@@ -252,8 +309,17 @@ export const docApi = {
       body: formData
     });
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: 'Version upload failed' }));
-      throw new Error(err.message || 'Version upload failed');
+      let errMsg = 'Version upload failed';
+      try {
+        const err = await res.json();
+        errMsg = err.message || err.error || errMsg;
+      } catch {
+        try {
+          const txt = await res.text();
+          if (txt && txt.length < 250) errMsg = txt;
+        } catch (_) {}
+      }
+      throw new Error(errMsg);
     }
     return await res.json();
   },
@@ -316,6 +382,36 @@ export const docApi = {
     return { filename, sha256, integrity, sigValid };
   },
 
+  // Get dynamic viewing session with watermark metadata & forensic audit record
+  async getViewSession(id, version = null) {
+    const url = version
+      ? `${BACKEND_URL}/api/documents/${id}/view-session?version=${version}`
+      : `${BACKEND_URL}/api/documents/${id}/view-session`;
+    const res = await apiFetch(url, { method: 'GET' });
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.message || 'Failed to initialize secure viewing session');
+    }
+    return await res.json();
+  },
+
+  // Get preview blob for in-browser rendering
+  async getPreviewBlob(id, version = null) {
+    const url = version
+      ? `${BACKEND_URL}/api/documents/${id}/preview?version=${version}`
+      : `${BACKEND_URL}/api/documents/${id}/preview`;
+    const res = await apiFetch(url, { method: 'GET' });
+    if (!res.ok) {
+      throw new Error('Failed to retrieve document preview from vault');
+    }
+    const blob = await res.blob();
+    const mimeType = res.headers.get('content-type') || blob.type || 'application/pdf';
+    const sha256 = res.headers.get('X-DMS-SHA256');
+    const integrity = res.headers.get('X-DMS-Integrity-Verified');
+    const sigValid = res.headers.get('X-DMS-Signature-Valid');
+    return { blob, mimeType, sha256, integrity, sigValid };
+  },
+
   // Get audit logs
   async getAuditLogs(documentId = null, caseId = null) {
     let url = `${BACKEND_URL}/api/audit-logs`;
@@ -333,6 +429,79 @@ export const docApi = {
   async resetSystem() {
     const res = await apiFetch(`${BACKEND_URL}/api/test/reset`, { method: 'POST' });
     if (!res.ok) throw new Error('System reset failed');
+    return await res.json();
+  },
+
+  // Request access to a document: POST /api/documents/{documentId}/access/request
+  async requestAccess(documentId, optionsOrPermission = {}, reasonArg = '') {
+    if (!documentId) throw new Error('documentId is required');
+    let permission = 'VIEW';
+    let reason = '';
+
+    if (typeof optionsOrPermission === 'string') {
+      const upper = optionsOrPermission.toUpperCase();
+      if (['VIEW', 'DOWNLOAD', 'UPLOAD', 'EDIT', 'SHARE', 'DELETE'].includes(upper)) {
+        permission = upper;
+        if (typeof reasonArg === 'string') reason = reasonArg;
+      } else {
+        reason = optionsOrPermission;
+      }
+    } else if (optionsOrPermission && typeof optionsOrPermission === 'object') {
+      if (optionsOrPermission.permission) permission = String(optionsOrPermission.permission).toUpperCase();
+      if (optionsOrPermission.reason) reason = String(optionsOrPermission.reason);
+    }
+
+    const res = await apiFetch(`${BACKEND_URL}/api/documents/${encodeURIComponent(documentId)}/access/request`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ permission, reason })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(async () => {
+        const text = await res.text().catch(() => '');
+        return text ? { message: text } : null;
+      });
+      throw new Error(err?.message || err?.error || 'Failed to request document access');
+    }
+
+    return await res.json();
+  },
+
+  // Get access requests for a document: GET /api/documents/{documentId}/access/requests
+  async getAccessRequests(documentId) {
+    if (!documentId) throw new Error('documentId is required');
+    const res = await apiFetch(`${BACKEND_URL}/api/documents/${encodeURIComponent(documentId)}/access/requests`, {
+      method: 'GET'
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(async () => {
+        const text = await res.text().catch(() => '');
+        return text ? { message: text } : null;
+      });
+      throw new Error(err?.message || err?.error || 'Failed to fetch document access requests');
+    }
+
+    return await res.json();
+  },
+
+  // Review a document access request: PUT /api/documents/access/requests/{requestId}?approved=true/false
+  async reviewAccessRequest(requestId, approved) {
+    if (requestId === undefined || requestId === null) throw new Error('requestId is required');
+    const isApproved = Boolean(approved);
+    const res = await apiFetch(`${BACKEND_URL}/api/documents/access/requests/${encodeURIComponent(requestId)}?approved=${isApproved}`, {
+      method: 'PUT'
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(async () => {
+        const text = await res.text().catch(() => '');
+        return text ? { message: text } : null;
+      });
+      throw new Error(err?.message || err?.error || `Failed to ${isApproved ? 'approve' : 'reject'} document access request`);
+    }
+
     return await res.json();
   }
 };
@@ -360,7 +529,87 @@ export const caseApi = {
     }
 
     return await res.json();
+  },
+
+  // Request access to a case: POST /api/cases/{caseNumber}/access/request
+  async requestAccess(caseNumber, reasonOrBody = {}) {
+    if (!caseNumber) throw new Error('caseNumber is required');
+    const body = typeof reasonOrBody === 'string'
+      ? { reason: reasonOrBody }
+      : (reasonOrBody || {});
+
+    const res = await apiFetch(`${BACKEND_URL}/api/cases/${encodeURIComponent(caseNumber)}/access/request`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        reason: body.reason || '',
+        requestedUserId: body.requestedUserId,
+        requestedBy: body.requestedBy
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(async () => {
+        const text = await res.text().catch(() => '');
+        return text ? { message: text } : null;
+      });
+      throw new Error(err?.message || err?.error || 'Failed to request case access');
+    }
+
+    return await res.json();
+  },
+
+  // Get access requests for a case: GET /api/cases/{caseNumber}/access/requests
+  async getAccessRequests(caseNumber) {
+    if (!caseNumber) throw new Error('caseNumber is required');
+    const res = await apiFetch(`${BACKEND_URL}/api/cases/${encodeURIComponent(caseNumber)}/access/requests`, {
+      method: 'GET'
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(async () => {
+        const text = await res.text().catch(() => '');
+        return text ? { message: text } : null;
+      });
+      throw new Error(err?.message || err?.error || 'Failed to fetch case access requests');
+    }
+
+    return await res.json();
+  },
+
+  // Review a case access request: PUT /api/cases/access/requests/{requestId}?approved=true/false
+  async reviewAccessRequest(requestId, approved) {
+    if (requestId === undefined || requestId === null) throw new Error('requestId is required');
+    const isApproved = Boolean(approved);
+    const res = await apiFetch(`${BACKEND_URL}/api/cases/access/requests/${encodeURIComponent(requestId)}?approved=${isApproved}`, {
+      method: 'PUT'
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(async () => {
+        const text = await res.text().catch(() => '');
+        return text ? { message: text } : null;
+      });
+      throw new Error(err?.message || err?.error || `Failed to ${isApproved ? 'approve' : 'reject'} case access request`);
+    }
+
+    return await res.json();
   }
+};
+
+/* ----------------------------------------------------
+   ACCESS REQUESTS API (Unified Service for Cases & Documents)
+---------------------------------------------------- */
+export const accessApi = {
+  // Case Access Requests
+  requestCaseAccess: (caseNumber, body) => caseApi.requestAccess(caseNumber, body),
+  getCaseAccessRequests: (caseNumber) => caseApi.getAccessRequests(caseNumber),
+  reviewCaseAccessRequest: (requestId, approved) => caseApi.reviewAccessRequest(requestId, approved),
+
+  // Document Access Requests
+  requestDocumentAccess: (documentId, options, reason) => docApi.requestAccess(documentId, options, reason),
+  getDocumentAccessRequests: (documentId) => docApi.getAccessRequests(documentId),
+  reviewDocumentAccessRequest: (requestId, approved) => docApi.reviewAccessRequest(requestId, approved)
 };
 
 /* ----------------------------------------------------
