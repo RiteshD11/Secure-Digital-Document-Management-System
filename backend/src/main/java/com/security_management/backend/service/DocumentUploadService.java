@@ -18,6 +18,8 @@ import com.security_management.backend.malware.MalwareScanService;
 import com.security_management.backend.repository.DocumentRepository;
 import com.security_management.backend.repository.DocumentVersionRepository;
 import com.security_management.backend.signature.DigitalSignatureService;
+import com.security_management.backend.timestamp.RFC3161Service;
+import com.security_management.backend.timestamp.TSAResult;
 import com.security_management.backend.storage.MinioStorageService;
 import com.security_management.backend.storage.StorageService;
 import com.security_management.backend.validation.FileValidationService;
@@ -54,6 +56,7 @@ public class DocumentUploadService {
     private final AuditService auditService;
     private final DocumentAccessService documentAccessService;
     private final CaseAccessService caseAccessService;
+    private final RFC3161Service rfc3161Service;
 
     @Autowired
     public DocumentUploadService(FileValidationService fileValidationService,
@@ -68,7 +71,8 @@ public class DocumentUploadService {
                                  DocumentVersionRepository documentVersionRepository,
                                  AuditService auditService,
                                  DocumentAccessService documentAccessService,
-                                 CaseAccessService caseAccessService) {
+                                 CaseAccessService caseAccessService,
+                                 RFC3161Service rfc3161Service) {
         this.fileValidationService = fileValidationService;
         this.malwareScanService = malwareScanService;
         this.hashService = hashService;
@@ -82,6 +86,7 @@ public class DocumentUploadService {
         this.auditService = auditService;
         this.documentAccessService = documentAccessService;
         this.caseAccessService = caseAccessService;
+        this.rfc3161Service = rfc3161Service;
     }
 
     @jakarta.annotation.PostConstruct
@@ -176,6 +181,14 @@ public class DocumentUploadService {
         byte[] wrappedDekBytes = keyManagementService.wrapDek(dek);
         String wrappedDekBase64 = Base64.getEncoder().encodeToString(wrappedDekBytes);
 
+        // Step 3.D: RFC-3161 Timestamping
+        TSAResult tsaResult = null;
+        try {
+            tsaResult = rfc3161Service.getSecureTimestamp(dualHash.getSha256());
+        } catch (Exception e) {
+            log.warn("Failed to acquire RFC-3161 timestamp, proceeding without it.", e);
+        }
+
         String sanitizedFilename = fileValidationService.sanitizeFilename(file.getOriginalFilename());
         String mimeType = fileValidationService.detectMimeType(rawBytes, sanitizedFilename);
         String documentId = generateUniqueDocumentId();
@@ -245,6 +258,8 @@ public class DocumentUploadService {
                     .status("ACTIVE")
                     .filename(sanitizedFilename)
                     .mimeType(mimeType)
+                    .tsaToken(tsaResult != null ? tsaResult.getTokenBase64() : null)
+                    .tsaTimestamp(tsaResult != null ? tsaResult.getTimestamp() : null)
                     .build();
 
             documentRepository.save(document);
@@ -290,6 +305,7 @@ public class DocumentUploadService {
                     .signatureAlgorithm(digitalSignatureService.getSignatureAlgorithm())
                     .encryptionAlgorithm("AES-256-GCM")
                     .createdAt(document.getCreatedAt())
+                    .tsaTimestamp(tsaResult != null ? tsaResult.getTimestamp() : null)
                     .build();
 
         } catch (Exception e) {
@@ -371,6 +387,13 @@ public class DocumentUploadService {
         byte[] wrappedDekBytes = keyManagementService.wrapDek(dek);
         String wrappedDekBase64 = Base64.getEncoder().encodeToString(wrappedDekBytes);
 
+        TSAResult tsaResult = null;
+        try {
+            tsaResult = rfc3161Service.getSecureTimestamp(dualHash.getSha256());
+        } catch (Exception e) {
+            log.warn("Failed to acquire RFC-3161 timestamp, proceeding without it.", e);
+        }
+
         String sanitizedFilename = fileValidationService.sanitizeFilename(file.getOriginalFilename());
         String detectedMime = fileValidationService.detectMimeType(rawBytes, sanitizedFilename);
         int newVersionNumber = document.getCurrentVersion() + 1;
@@ -399,8 +422,8 @@ public class DocumentUploadService {
                 .originalSha256(dualHash.getSha256())
                 .sha3_256(dualHash.getSha3_256())
                 .blake3(dualHash.getBlake3())
-                .blockchainTxId(txResult != null ? txResult.getTxId() : "tx_v" + newVersionNumber)
-                .blockchainBlockNumber(txResult != null ? txResult.getBlockNumber() : (long) newVersionNumber)
+                .blockchainTxId(txResult != null && txResult.getTxId() != null ? txResult.getTxId() : "tx_v" + newVersionNumber)
+                .blockchainBlockNumber(txResult != null && txResult.getBlockNumber() != null ? txResult.getBlockNumber() : (long) newVersionNumber)
                 .encryptionAlgorithm("AES-256-GCM")
                 .encryptionNonce(encrypted.getIvBase64())
                 .authenticationTag("GCM-128BIT")
@@ -414,6 +437,8 @@ public class DocumentUploadService {
                 .status("ACTIVE")
                 .filename(sanitizedFilename)
                 .mimeType(detectedMime)
+                .tsaToken(tsaResult != null ? tsaResult.getTokenBase64() : null)
+                .tsaTimestamp(tsaResult != null ? tsaResult.getTimestamp() : null)
                 .build();
 
         documentVersionRepository.save(newVersion);
@@ -454,6 +479,7 @@ public class DocumentUploadService {
                 .signatureAlgorithm(digitalSignatureService.getSignatureAlgorithm())
                 .encryptionAlgorithm("AES-256-GCM")
                 .createdAt(newVersion.getCreatedAt())
+                .tsaTimestamp(tsaResult != null ? tsaResult.getTimestamp() : null)
                 .build();
     }
 
