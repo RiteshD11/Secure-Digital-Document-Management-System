@@ -27,6 +27,9 @@ public class MinioStorageService implements StorageService {
     @Value("${dms.minio.bucketName:secure-dms-documents}")
     private String bucketName;
 
+    @Value("${dms.minio.quarantineBucket:secure-dms-quarantine}")
+    private String quarantineBucket;
+
     @Value("${dms.minio.enabled:true}")
     private boolean enabled;
 
@@ -45,12 +48,9 @@ public class MinioStorageService implements StorageService {
                     .credentials(accessKey, secretKey)
                     .build();
 
-            // Check if bucket exists, create if not
-            boolean exists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
-            if (!exists) {
-                minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
-                log.info("Created MinIO bucket: {}", bucketName);
-            }
+            ensureBucketExists(bucketName);
+            ensureBucketExists(quarantineBucket);
+
             this.connected = true;
             log.info("Successfully connected to MinIO at {}", endpoint);
         } catch (Exception e) {
@@ -59,10 +59,15 @@ public class MinioStorageService implements StorageService {
         }
     }
 
-    public synchronized boolean isConnected() {
-        if (!connected && enabled) {
-            init();
+    private void ensureBucketExists(String bucket) throws Exception {
+        boolean exists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucket).build());
+        if (!exists) {
+            minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
+            log.info("Created MinIO bucket: {}", bucket);
         }
+    }
+
+    public synchronized boolean isConnected() {
         return connected;
     }
 
@@ -73,21 +78,29 @@ public class MinioStorageService implements StorageService {
 
     @Override
     public void store(String objectKey, InputStream inputStream, long size, String contentType) {
+        storeInBucket(bucketName, objectKey, inputStream, size, contentType);
+    }
+
+    public void storeQuarantined(String objectKey, byte[] data, String contentType) {
+        storeInBucket(quarantineBucket, objectKey, new ByteArrayInputStream(data), data.length, contentType);
+    }
+
+    private void storeInBucket(String targetBucket, String objectKey, InputStream inputStream, long size, String contentType) {
         if (!connected) {
             throw new RuntimeException("MinIO client is not connected");
         }
         try {
             minioClient.putObject(
                     PutObjectArgs.builder()
-                            .bucket(bucketName)
+                            .bucket(targetBucket)
                             .object(objectKey)
                             .stream(inputStream, size, -1)
                             .contentType(contentType != null ? contentType : "application/octet-stream")
                             .build()
             );
-            log.info("Stored object in MinIO: {}/{}", bucketName, objectKey);
+            log.info("Stored object in MinIO bucket '{}': {}", targetBucket, objectKey);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to store object in MinIO: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to store object in MinIO bucket " + targetBucket + ": " + e.getMessage(), e);
         }
     }
 

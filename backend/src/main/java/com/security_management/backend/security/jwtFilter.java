@@ -1,6 +1,5 @@
 package com.security_management.backend.security;
 
-
 import com.security_management.backend.service.authUtl;
 import com.security_management.backend.service.userDetailSevice;
 import jakarta.servlet.FilterChain;
@@ -31,17 +30,12 @@ public class jwtFilter extends OncePerRequestFilter {
     ApplicationContext context;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
-
-         String tokenHeader= request.getHeader("Authorization");
-         String token=null;
-         String username=null;
-
-         if(tokenHeader==null || !tokenHeader.startsWith("Bearer ")){
-             filterChain.doFilter(request,response);
-             return;
-         }
+        String tokenHeader = request.getHeader("Authorization");
+        String token = null;
+        String username = null;
 
          token = tokenHeader.substring(7);
 
