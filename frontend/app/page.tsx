@@ -23,6 +23,7 @@ import {
   Smartphone,
   CreditCard,
   Briefcase,
+  Search,
   Camera,
   UploadCloud,
   Check,
@@ -140,7 +141,7 @@ export default function App() {
   const [regNotice, setRegNotice] = useState<{ type: 'error' | 'success'; message: string } | null>(null)
 
   // Dashboard Main States
-  const [activeTab, setActiveTab] = useState<'upload' | 'vault' | 'audit' | 'access'>('upload')
+  const [activeTab, setActiveTab] = useState<'upload' | 'document-vault' | 'document-request' | 'audit' | 'view-cases' | 'create-case'>('upload')
   const [backendOnline, setBackendOnline] = useState<boolean>(true)
   const [backendPort, setBackendPort] = useState<string>('8082')
 
@@ -1827,61 +1828,26 @@ export default function App() {
   // ----------------------------------------------------
   if (!isAuthenticated) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', background: '#EAF3FF', backgroundImage: 'linear-gradient(180deg,#EAF3FF 0%,#F7F9FC 100%)' }}>
-        <div style={{ width: '100%', maxWidth: '480px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '32px', boxShadow: 'var(--shadow-card-md)', borderTop: '3px solid var(--gov-navy)' }}>
+      <div style={{ height: '100vh', display: 'flex', width: '100%', overflow: 'hidden' }}>
+        {/* LEFT COLUMN - Image */}
+        <div style={{ flex: '1', display: 'flex', flexDirection: 'column', position: 'relative', background: '#f8fafc' }} className="auth-left-col">
+          <img 
+            src="/audit-bg.jpeg" 
+            alt="Authentication Background" 
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} 
+          />
+        </div>
 
-          <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <div style={{ width: '56px', height: '56px', margin: '0 auto 14px', borderRadius: 'var(--radius-md)', background: 'linear-gradient(135deg, var(--gov-navy-dark), var(--gov-navy-medium))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 4px 16px rgba(6,59,130,0.35)' }}>
-              <Shield size={32} />
+        {/* RIGHT COLUMN - Form */}
+        <div style={{ flex: '1', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '40px', background: '#fff', maxWidth: '640px', margin: '0 auto', width: '100%', overflowY: 'auto' }}>
+          <div style={{ width: '100%', maxWidth: '440px', margin: '0 auto' }}>
+            <div style={{ marginBottom: '16px' }}>
             </div>
-            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--gov-navy-dark)' }}>
-              NyayaSetu <span className="badge-tag">GOV-AUTH</span>
-            </h1>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-              Cryptographic Evidence & Document Security Gateway
-            </p>
-          </div>
-
-          {/* Auth Tab Switcher */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'var(--bg-subtle)', padding: '4px', borderRadius: 'var(--radius-sm)', marginBottom: '24px', border: '1px solid var(--border-color)' }}>
-            <button
-              onClick={() => { setAuthTab('login'); setLoginError(null); }}
-              style={{ padding: '8px', border: 'none', borderRadius: '6px', background: authTab === 'login' ? 'var(--gov-navy)' : 'transparent', color: authTab === 'login' ? '#fff' : 'var(--text-secondary)', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s' }}
-            >
-              Sign In
-            </button>
-            <button
-              onClick={() => { setAuthTab('register'); setRegNotice(null); }}
-              style={{ padding: '8px', border: 'none', borderRadius: '6px', background: authTab === 'register' ? 'var(--gov-navy)' : 'transparent', color: authTab === 'register' ? '#fff' : 'var(--text-secondary)', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s' }}
-            >
-              Register Officer
-            </button>
-          </div>
 
           {/* SIGN IN TAB */}
           {authTab === 'login' && (
             <div>
-              {/* 3-Step Sequential MFA Progress Stepper */}
-              <div className="mfa-stepper-container">
-                <div className={`mfa-step-item ${loginStep === 'credentials' ? 'active' : 'completed'}`}>
-                  {/* <span className="mfa-step-badge">
-                    {loginStep === 'credentials' ? '1' : <Check size={12} />}
-                  </span> */}
-                  {/* <span>Password</span> */}
-                </div>
-                <div className={`mfa-step-divider ${loginStep === 'otp' || loginStep === 'face' ? 'active' : ''}`} />
-                <div className={`mfa-step-item ${loginStep === 'otp' ? 'active' : loginStep === 'face' ? 'completed' : ''}`}>
-                  {/* <span className="mfa-step-badge">
-                    {loginStep === 'face' ? <Check size={12} /> : '2'}
-                  </span> */}
-                  {/* <span>OTP Code</span> */}
-                </div>
-                <div className={`mfa-step-divider ${loginStep === 'face' ? 'active' : ''}`} />
-                <div className={`mfa-step-item ${loginStep === 'face' ? 'active' : ''}`}>
-                  {/* <span className="mfa-step-badge">3</span> */}
-                  {/* <span>Face Biometric</span> */}
-                </div>
-              </div>
+
 
               {loginError && (
                 <div style={{ padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(185,28,28,0.08)', border: '1px solid rgba(185,28,28,0.3)', color: 'var(--accent-rose)', fontSize: '0.82rem', marginBottom: '16px' }}>
@@ -1892,29 +1858,50 @@ export default function App() {
               {/* Step 1: Password Credentials */}
               {loginStep === 'credentials' && (
                 <form onSubmit={handleLoginPassword} className="form-container">
-                  <div className="form-group">
-                    <label>Officer Username / Email</label>
-                    <input
-                      type="text"
-                      value={loginUsername}
-                      onChange={e => setLoginUsername(e.target.value)}
-                      placeholder="e.g. officer@police.gov.in"
-                      required
-                    />
+                  <div className="form-group" style={{ marginBottom: '16px' }}>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                      <User size={18} style={{ position: 'absolute', left: '14px', color: '#64748b' }} />
+                      <input
+                        type="text"
+                        value={loginUsername}
+                        onChange={e => setLoginUsername(e.target.value)}
+                        placeholder="Username / Email ID"
+                        style={{ width: '100%', padding: '12px 14px 12px 42px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
+                        required
+                      />
+                    </div>
                   </div>
-                  <div className="form-group">
-                    <label>Password</label>
-                    <input
-                      type="password"
-                      value={loginPassword}
-                      onChange={e => setLoginPassword(e.target.value)}
-                      placeholder="••••••••"
-                      required
-                    />
+                  <div className="form-group" style={{ marginBottom: '16px' }}>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                      <Lock size={18} style={{ position: 'absolute', left: '14px', color: '#64748b' }} />
+                      <input
+                        type="password"
+                        value={loginPassword}
+                        onChange={e => setLoginPassword(e.target.value)}
+                        placeholder="Password"
+                        style={{ width: '100%', padding: '12px 42px 12px 42px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
+                        required
+                      />
+                      <Eye size={18} style={{ position: 'absolute', right: '14px', color: '#64748b', cursor: 'pointer' }} />
+                    </div>
                   </div>
-                  <button type="submit" className="btn btn-primary" disabled={loginLoading} style={{ marginTop: '8px' }}>
-                    {loginLoading ? 'Verifying Credentials...' : 'Verify Password & Request OTP'}
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '24px', fontSize: '0.85rem' }}>
+                    <a href="#" style={{ color: '#063B82', fontWeight: 600, textDecoration: 'none' }}>Forgot Password?</a>
+                  </div>
+
+                  <button type="submit" className="btn btn-primary" disabled={loginLoading} style={{ width: '100%', padding: '12px', fontSize: '1rem', background: '#063B82', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+                    {loginLoading ? 'Signing In...' : 'Sign In'}
+                    {!loginLoading && <span>&rarr;</span>}
                   </button>
+
+                  <button type="button" style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #063B82', background: 'transparent', color: '#063B82', fontSize: '0.95rem', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '16px' }}>
+                    <Database size={18} /> Login with SOS
+                  </button>
+
+                  <div style={{ marginTop: '32px', textAlign: 'left', fontSize: '0.85rem', color: '#64748b' }}>
+                    Don't have an account? <span onClick={() => { setAuthTab('register'); setLoginError(null); }} style={{ color: '#063B82', fontWeight: 600, cursor: 'pointer' }}>Register Here</span>
+                  </div>
                 </form>
               )}
 
@@ -2359,6 +2346,10 @@ export default function App() {
                   </button>
                 </form>
               )}
+              {/* Registration Toggle Footer */}
+              <div style={{ marginTop: '32px', textAlign: 'left', fontSize: '0.85rem', color: '#64748b' }}>
+                Already have an account? <span onClick={() => { setAuthTab('login'); setRegNotice(null); }} style={{ color: '#063B82', fontWeight: 600, cursor: 'pointer' }}>Sign In Here</span>
+              </div>
             </div>
           )}
 
@@ -2373,6 +2364,7 @@ export default function App() {
               <span>⚡</span> Skip Login &amp; Enter Dashboard Directly
             </button>
           </div>
+        </div>
         </div>
 
         {/* Toasts */}
@@ -2392,88 +2384,109 @@ export default function App() {
   // ----------------------------------------------------
   return (
     <div className="app-container">
-      {/* Top Header */}
-      <header className="top-nav">
-        <div className="brand-group">
-          <div className="shield-logo">
-            <Shield size={28} />
-          </div>
-          <div>
-            <h1 className="brand-title">
-              NyayaSetu <span className="badge-tag">AES-256-GCM</span>
-            </h1>
-            <p className="brand-subtitle">Evidence intake, verification, and audit-ready document security</p>
-          </div>
-        </div>
-
-        <div className="header-status-panel">
-          <div className="status-indicator-pill">
-            <span className={`status-dot ${backendOnline ? 'online' : 'offline'} pulsing`}></span>
-            <span>{backendOnline ? `Backend Online (Port ${backendPort})` : 'Backend Offline'}</span>
-          </div>
-
-          <div className="crypto-pills">
-            <span className="crypto-chip" title="Digital Signature Scheme">RSA-PSS</span>
-            <span className="crypto-chip" title="Envelope Encryption">KEK / DEK</span>
-            <span className="crypto-chip" title="Integrity Hash">SHA-256</span>
-          </div>
-
-          <button
-            className="btn btn-secondary btn-xs"
-            onClick={handleResetSystem}
-            style={{ color: '#f87171', borderColor: 'rgba(248, 113, 113, 0.3)' }}
-            title="Clear all documents & database back to DOC-1001"
-          >
-            Clear DB
-          </button>
-
-          {/* User profile & Logout */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 12px', background: 'var(--bg-section)', borderRadius: '20px', border: '1px solid rgba(6,59,130,0.2)' }}>
-            <User size={14} color="var(--gov-navy)" />
-            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--gov-navy-dark)' }}>{currentUser?.username || ''}</span>
-            <button
-              onClick={handleLogout}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', padding: '2px' }}
-              title="Sign Out"
-            >
-              <LogOut size={14} />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Tabs */}
-      <nav className="nav-tabs">
-        <button
-          className={`tab-btn ${activeTab === 'upload' ? 'active' : ''}`}
-          onClick={() => setActiveTab('upload')}
-        >
-          <Upload size={18} /> Upload &amp; Pipeline
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'vault' ? 'active' : ''}`}
-          onClick={() => { setActiveTab('vault'); loadDocuments(); }}
-        >
-          <Lock size={18} /> Document Vault ({documents.length})
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'audit' ? 'active' : ''}`}
-          onClick={() => { setActiveTab('audit'); loadAuditLogs(); }}
-        >
-          <FileText size={18} /> Audit Trail ({auditLogs.length})
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'access' ? 'active' : ''}`}
-          onClick={() => { setActiveTab('access'); loadCases(); loadDocuments(); }}
-        >
-          <Briefcase size={18} /> Access List ({cases.length})
-        </button>
-      </nav>
-
-      <div className="dashboard-alert">
-        <Shield size={16} />
-        <span>Secure intake pipeline is active: files are validated, scanned, signed, stored, and audited.</span>
+      <div style={{ padding: '24px 24px 0 24px', display: 'flex', alignItems: 'center' }}>
+        <h1 style={{ 
+          margin: 0, 
+          fontSize: '1.8rem', 
+          fontWeight: 800, 
+          background: 'linear-gradient(90deg, var(--gov-navy), #3b82f6)', 
+          WebkitBackgroundClip: 'text', 
+          WebkitTextFillColor: 'transparent',
+          letterSpacing: '0.5px',
+          fontFamily: 'var(--font-heading)'
+        }}>
+          e-SanRaksha
+        </h1>
       </div>
+      <header className="new-top-nav-container">
+        {/* Horizontal Navigation with Dropdowns */}
+        <nav className="horizontal-glass-nav">
+          <ul className="nav-menu">
+            <li className="nav-item">
+              <button
+                className={`nav-tab-btn ${activeTab === 'upload' ? 'active' : ''}`}
+                onClick={() => setActiveTab('upload')}
+              >
+                Upload Document
+              </button>
+            </li>
+            
+            <li className="nav-item dropdown-wrapper">
+              <button
+                className={`nav-tab-btn ${['document-request', 'document-vault'].includes(activeTab) ? 'active' : ''}`}
+              >
+                {activeTab === 'document-request' ? 'Document Request ▾' : 
+                 activeTab === 'document-vault' ? 'Documents ▾' : 
+                 'Document Vault ▾'}
+              </button>
+              <ul className="dropdown-menu">
+                <li>
+                  <button onClick={() => { setActiveTab('document-request'); }}>
+                    Document Request
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => { setActiveTab('document-vault'); loadDocuments(); }}>
+                    Documents
+                  </button>
+                </li>
+              </ul>
+            </li>
+
+            <li className="nav-item dropdown-wrapper">
+              <button
+                className={`nav-tab-btn ${['create-case', 'view-cases'].includes(activeTab) ? 'active' : ''}`}
+              >
+                {activeTab === 'create-case' ? 'Create Case ▾' : 
+                 activeTab === 'view-cases' ? 'View Cases ▾' : 
+                 'Cases ▾'}
+              </button>
+              <ul className="dropdown-menu">
+                <li>
+                  <button onClick={() => { setActiveTab('create-case'); loadCases(); }}>
+                    Create Case
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => { setActiveTab('view-cases'); loadCases(); loadDocuments(); }}>
+                    View Cases
+                  </button>
+                </li>
+              </ul>
+            </li>
+            
+            <li className="nav-item">
+              <button
+                className={`nav-tab-btn ${activeTab === 'audit' ? 'active' : ''}`}
+                onClick={() => { setActiveTab('audit'); loadAuditLogs(); }}
+              >
+                Audit Trail
+              </button>
+            </li>
+          </ul>
+
+          <div className="nav-right-actions" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {/* Search Box */}
+            <div style={{ position: 'relative' }}>
+              <Search size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+              <input 
+                type="text" 
+                placeholder="Search..." 
+                style={{ padding: '6px 12px 6px 32px', borderRadius: '20px', border: '1px solid var(--border-color)', fontSize: '0.85rem', width: '200px', background: 'var(--bg-subtle)', color: 'var(--text-primary)' }} 
+              />
+            </div>
+
+            {/* User profile & Logout */}
+            <div className="user-profile-pill">
+              <User size={14} />
+              <span>{currentUser?.username || ''}</span>
+              <button onClick={handleLogout} title="Sign Out">
+                <LogOut size={14} />
+              </button>
+            </div>
+          </div>
+        </nav>
+      </header>
 
       {/* ----------------------------------------------------
           TAB 1: UPLOAD & PIPELINE
@@ -2485,7 +2498,6 @@ export default function App() {
             <section className="card">
               <div className="card-header">
                 <h2>Upload Secure Document</h2>
-                <span className="card-badge">Phase 0 – 18</span>
               </div>
 
               <form onSubmit={handleExecutePipeline} className="form-container">
@@ -2518,29 +2530,7 @@ export default function App() {
 
                 <div className="form-row">
                   <div className="form-group">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                      <label style={{ margin: 0 }}>Case ID</label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const custom = prompt('Enter Case Number / ID (e.g. CASE-2026-001):', caseId || 'CASE-2026-001')
-                          if (custom && custom.trim()) {
-                            setCaseId(custom.trim().toUpperCase())
-                          }
-                        }}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: 'var(--accent-cyan)',
-                          fontSize: '0.74rem',
-                          cursor: 'pointer',
-                          textDecoration: 'underline',
-                          padding: 0
-                        }}
-                      >
-                        + Enter Custom Case ID
-                      </button>
-                    </div>
+                    <label>Case ID</label>
                     <select
                       value={caseId}
                       onChange={e => setCaseId(e.target.value)}
@@ -2606,7 +2596,7 @@ export default function App() {
                   type="submit"
                   className="btn btn-primary"
                   disabled={pipelineRunning || !selectedFile}
-                  style={{ marginTop: '6px' }}
+                  style={{ marginTop: '12px' }}
                 >
                   <Upload size={18} />
                   {pipelineRunning ? 'Executing 7-Step Security Chain...' : 'Execute Secure Pipeline & Upload'}
@@ -2730,7 +2720,7 @@ export default function App() {
       {/* ----------------------------------------------------
           TAB 2: DOCUMENT VAULT
           ---------------------------------------------------- */}
-      {activeTab === 'vault' && (
+      {['document-request', 'document-vault'].includes(activeTab) && (
         <main className="tab-content active">
           <section className="card full-width">
             <div className="card-header">
@@ -2744,7 +2734,7 @@ export default function App() {
                   placeholder="Search by ID, name, case..."
                   value={searchVault}
                   onChange={e => setSearchVault(e.target.value)}
-                  style={{ padding: '6px 12px', borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: '#fff', fontSize: '0.85rem' }}
+                  style={{ padding: '8px 14px', borderRadius: '6px', background: '#ffffff', border: '1px solid #cbd5e1', color: '#1e293b', fontSize: '0.88rem', outline: 'none' }}
                 />
                 <button className="btn btn-secondary btn-sm" onClick={() => openDocRequestModal(null)} title="Request Document Access">
                   <Shield size={14} /> Request Document Access
@@ -2756,7 +2746,8 @@ export default function App() {
               </div>
             </div>
 
-            <div className="table-container">
+            {activeTab === 'document-vault' && (
+              <div className="table-container">
               <table className="data-table">
                 <thead>
                   <tr>
@@ -2885,7 +2876,11 @@ export default function App() {
               </table>
             </div>
 
+            )}
+
             {/* Document Owner Review Section (Section 3) */}
+            {activeTab === 'document-request' && (
+              <>
             {documents.some(d => isDocOwner(d)) && (
               <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--border-color)' }}>
                 <div className="case-create-heading" style={{ marginBottom: '16px' }}>
@@ -3001,6 +2996,7 @@ export default function App() {
               </div>
             )}
 
+
             {/* Requester's Document Access Requests Panel (Section 3 & 5) */}
             <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--border-color)' }}>
               <div className="case-create-heading" style={{ marginBottom: '16px' }}>
@@ -3077,6 +3073,8 @@ export default function App() {
                 </table>
               </div>
             </div>
+              </>
+            )}
           </section>
         </main>
       )}
@@ -3084,7 +3082,7 @@ export default function App() {
       {/* ----------------------------------------------------
           TAB 3: ASSESSMENT / ACCESS LIST
           ---------------------------------------------------- */}
-      {activeTab === 'access' && (
+      {['create-case', 'view-cases'].includes(activeTab) && (
         <main className="tab-content active">
           <section className="card full-width">
             <div className="card-header">
@@ -3098,7 +3096,7 @@ export default function App() {
                   placeholder="Search case number or title..."
                   value={caseSearch}
                   onChange={e => setCaseSearch(e.target.value)}
-                  style={{ padding: '6px 12px', borderRadius: 'var(--radius-sm)', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border-color)', color: '#fff', fontSize: '0.85rem' }}
+                  style={{ padding: '8px 14px', borderRadius: '6px', background: '#ffffff', border: '1px solid #cbd5e1', color: '#1e293b', fontSize: '0.88rem', outline: 'none' }}
                 />
                 <button className="btn btn-secondary btn-sm" onClick={() => openCaseRequestModal('')} title="Request Access by Case Number">
                   <Key size={14} /> Request Case Access
@@ -3130,55 +3128,58 @@ export default function App() {
               </div>
             </div>
 
-            <form onSubmit={handleCreateCase} className="case-create-panel">
-              <div className="case-create-heading">
-                <div>
-                  <h3>Create New Case</h3>
-                  <p>Register a case before uploading its secure documents.</p>
+            {activeTab === 'create-case' && (
+              <form onSubmit={handleCreateCase} className="case-create-panel">
+                <div className="case-create-heading">
+                  <div>
+                    <h3>Create New Case</h3>
+                    <p>Register a case before uploading its secure documents.</p>
+                  </div>
+                  <span className="card-badge">Created by {currentUser?.username || ''}</span>
                 </div>
-                <span className="card-badge">Created by {currentUser?.username || ''}</span>
-              </div>
-              <div className="form-row">
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="new-case-number">Case Number</label>
+                    <input
+                      id="new-case-number"
+                      type="text"
+                      value={newCaseNumber}
+                      onChange={e => setNewCaseNumber(e.target.value)}
+                      placeholder="e.g. CASE-2026-001"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="new-case-title">Case Title</label>
+                    <input
+                      id="new-case-title"
+                      type="text"
+                      value={newCaseTitle}
+                      onChange={e => setNewCaseTitle(e.target.value)}
+                      placeholder="e.g. Digital fraud investigation"
+                      required
+                    />
+                  </div>
+                </div>
                 <div className="form-group">
-                  <label htmlFor="new-case-number">Case Number</label>
-                  <input
-                    id="new-case-number"
-                    type="text"
-                    value={newCaseNumber}
-                    onChange={e => setNewCaseNumber(e.target.value)}
-                    placeholder="e.g. CASE-2026-001"
-                    required
+                  <label htmlFor="new-case-description">Description</label>
+                  <textarea
+                    id="new-case-description"
+                    value={newCaseDescription}
+                    onChange={e => setNewCaseDescription(e.target.value)}
+                    placeholder="Add a short description of this case"
+                    rows={3}
                   />
                 </div>
-                <div className="form-group">
-                  <label htmlFor="new-case-title">Case Title</label>
-                  <input
-                    id="new-case-title"
-                    type="text"
-                    value={newCaseTitle}
-                    onChange={e => setNewCaseTitle(e.target.value)}
-                    placeholder="e.g. Digital fraud investigation"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="form-group">
-                <label htmlFor="new-case-description">Description</label>
-                <textarea
-                  id="new-case-description"
-                  value={newCaseDescription}
-                  onChange={e => setNewCaseDescription(e.target.value)}
-                  placeholder="Add a short description of this case"
-                  rows={3}
-                />
-              </div>
-              <button type="submit" className="btn btn-primary" disabled={caseCreating}>
-                <Plus size={16} />
-                {caseCreating ? 'Creating case...' : 'Create Case'}
-              </button>
-            </form>
+                <button type="submit" className="btn btn-primary" disabled={caseCreating}>
+                  <Plus size={16} />
+                  {caseCreating ? 'Creating case...' : 'Create Case'}
+                </button>
+              </form>
+            )}
 
-            <div className="table-container">
+            {activeTab === 'view-cases' && ( <>
+              <div className="table-container">
               <table className="data-table">
                 <thead>
                   <tr>
@@ -3386,74 +3387,8 @@ export default function App() {
               </div>
             )}
 
-            {/* Requester's Case Access Requests Panel (Section 3 & 5) */}
-            <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--border-color)' }}>
-              <div className="case-create-heading" style={{ marginBottom: '16px' }}>
-                <div>
-                  <h3>My Case Access Requests</h3>
-                  <p>Track the review status of your submitted case access requests.</p>
-                </div>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <span className="card-badge">
-                    {myCaseRequests.length} Request{myCaseRequests.length !== 1 ? 's' : ''}
-                  </span>
-                  <button
-                    className="btn btn-secondary btn-xs"
-                    onClick={() => fetchCaseAccessRequests(cases)}
-                    disabled={casesLoading}
-                    title="Refresh my case access requests"
-                  >
-                    <RefreshCw size={12} className={casesLoading ? 'spin' : ''} /> Refresh
-                  </button>
-                </div>
-              </div>
 
-              <div className="table-container">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Case No</th>
-                      <th>Reason</th>
-                      <th>Date Requested</th>
-                      <th style={{ textAlign: 'right' }}>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {myCaseRequests.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="empty-state">
-                          No case access requests submitted yet.
-                        </td>
-                      </tr>
-                    ) : (
-                      myCaseRequests.map(req => (
-                        <tr key={req.id}>
-                          <td style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)', fontWeight: 600 }}>
-                            {req.caseId}
-                            {req.caseTitle && <div className="table-secondary-text">{req.caseTitle}</div>}
-                          </td>
-                          <td>
-                            <div style={{ maxWidth: '320px', whiteSpace: 'normal', fontSize: '0.85rem' }}>
-                              {req.reason || 'No justification provided'}
-                            </div>
-                          </td>
-                          <td style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                            {req.createdAt ? new Date(req.createdAt).toLocaleString() : '-'}
-                          </td>
-                          <td style={{ textAlign: 'right' }}>
-                            <span className={`step-badge ${req.status === 'APPROVED' ? 'success' :
-                              req.status === 'REJECTED' ? 'failed' : 'pending'
-                              }`} style={{ fontWeight: 600 }}>
-                              {req.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            </> )}
           </section>
         </main>
       )}
@@ -3695,7 +3630,7 @@ export default function App() {
             </div>
 
             <form onSubmit={handleCaseRequestSubmit} className="form-container">
-              <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(148, 163, 184, 0.15)', borderRadius: '8px', padding: '12px 16px' }}>
+              <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px 16px', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.82rem' }}>
                   <span className="text-muted">Target Case:</span>
                   <strong style={{ color: 'var(--accent-cyan)', fontFamily: 'var(--font-mono)' }}>{targetCaseForRequest || selectedCaseNumber || 'Custom Case'}</strong>
@@ -3787,7 +3722,7 @@ export default function App() {
 
             <form onSubmit={handleDocRequestSubmit} className="form-container">
               {targetDocForRequest ? (
-                <div style={{ background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(148, 163, 184, 0.15)', borderRadius: '8px', padding: '12px 16px' }}>
+                <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '12px 16px', marginBottom: '16px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.82rem' }}>
                     <span className="text-muted">Document:</span>
                     <strong style={{ color: 'var(--accent-cyan)' }}>{targetDocForRequest.originalFilename} ({targetDocForRequest.id})</strong>
@@ -3818,15 +3753,6 @@ export default function App() {
                   value={docRequestPermission}
                   onChange={e => setDocRequestPermission(e.target.value as any)}
                   className="form-control"
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    borderRadius: 'var(--radius-sm)',
-                    background: 'rgba(0,0,0,0.3)',
-                    border: '1px solid var(--border-color)',
-                    color: '#fff',
-                    fontSize: '0.85rem'
-                  }}
                   required
                 >
                   <option value="VIEW">VIEW — Inspect and read document metadata & decrypted preview</option>
