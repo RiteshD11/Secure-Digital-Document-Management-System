@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { authApi, caseApi, docApi, isTokenExpired, accessApi, BACKEND_URL } from '../src/services/api'
+import { authApi, caseApi, docApi, isTokenExpired, accessApi, BACKEND_URL, createMockJwt } from '../src/services/api'
 import SecureDocumentViewer, { ViewSessionData } from '../components/SecureDocumentViewer'
 import {
   Shield,
@@ -235,7 +235,30 @@ export default function App() {
     }, 4000)
   }
 
-  // Check saved login - restore dms_officer only in client-side useEffect/authInitialized flow
+  const DEFAULT_DEV_OFFICER = {
+    username: 'officer_sharma',
+    userId: '1',
+    role: 'Investigating Officer',
+    firstName: 'Rajesh',
+    lastName: 'Sharma',
+    token: createMockJwt({
+      badge: 'DL-POL-0442',
+      name: 'Insp. Rajesh Sharma',
+      title: 'Investigating Officer',
+      unit: 'Cyber Crime Cell',
+      username: 'officer_sharma',
+    }),
+  }
+
+  const loginWithDefaultOfficer = () => {
+    localStorage.setItem('dms_officer', JSON.stringify(DEFAULT_DEV_OFFICER))
+    setCurrentUser(DEFAULT_DEV_OFFICER)
+    setIsAuthenticated(true)
+    setUploadedBy(DEFAULT_DEV_OFFICER.username)
+    loadSavedRequests(DEFAULT_DEV_OFFICER.username, DEFAULT_DEV_OFFICER.userId)
+  }
+
+  // Check saved login - automatically bypass login with default officer if not logged in
   useEffect(() => {
     try {
       const saved = localStorage.getItem('dms_officer')
@@ -247,21 +270,13 @@ export default function App() {
           setUploadedBy(u.username)
           loadSavedRequests(u.username, u.userId)
         } else {
-          localStorage.removeItem('dms_officer')
-          setCurrentUser(null)
-          setIsAuthenticated(false)
-          setUploadedBy('')
+          loginWithDefaultOfficer()
         }
       } else {
-        setCurrentUser(null)
-        setIsAuthenticated(false)
-        setUploadedBy('')
+        loginWithDefaultOfficer()
       }
     } catch {
-      localStorage.removeItem('dms_officer')
-      setCurrentUser(null)
-      setIsAuthenticated(false)
-      setUploadedBy('')
+      loginWithDefaultOfficer()
     } finally {
       setAuthInitialized(true)
     }
@@ -1801,8 +1816,8 @@ export default function App() {
   // If authentication state is not yet initialized on client, render initial matching loading shell
   if (!authInitialized) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary, #0a0f1d)' }}>
-        <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '3px solid rgba(0, 242, 254, 0.2)', borderTopColor: 'var(--accent-cyan, #00f2fe)', animation: 'spin 1s linear infinite' }} />
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F7F9FC' }}>
+        <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '3px solid rgba(6,59,130,0.15)', borderTopColor: '#063B82', animation: 'spin 1s linear infinite' }} />
       </div>
     )
   }
@@ -1812,14 +1827,14 @@ export default function App() {
   // ----------------------------------------------------
   if (!isAuthenticated) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <div style={{ width: '100%', maxWidth: '480px', background: 'var(--bg-card)', backdropFilter: 'blur(16px)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '32px', boxShadow: 'var(--shadow-card)' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', background: '#EAF3FF', backgroundImage: 'linear-gradient(180deg,#EAF3FF 0%,#F7F9FC 100%)' }}>
+        <div style={{ width: '100%', maxWidth: '480px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '32px', boxShadow: 'var(--shadow-card-md)', borderTop: '3px solid var(--gov-navy)' }}>
 
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <div style={{ width: '56px', height: '56px', margin: '0 auto 14px', borderRadius: 'var(--radius-md)', background: 'linear-gradient(135deg, var(--accent-cyan), var(--accent-violet))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 0 20px rgba(0, 242, 254, 0.4)' }}>
+            <div style={{ width: '56px', height: '56px', margin: '0 auto 14px', borderRadius: 'var(--radius-md)', background: 'linear-gradient(135deg, var(--gov-navy-dark), var(--gov-navy-medium))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 4px 16px rgba(6,59,130,0.35)' }}>
               <Shield size={32} />
             </div>
-            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
+            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--gov-navy-dark)' }}>
               NyayaSetu <span className="badge-tag">GOV-AUTH</span>
             </h1>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
@@ -1828,16 +1843,16 @@ export default function App() {
           </div>
 
           {/* Auth Tab Switcher */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'rgba(0,0,0,0.3)', padding: '4px', borderRadius: 'var(--radius-sm)', marginBottom: '24px', border: '1px solid var(--border-color)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'var(--bg-subtle)', padding: '4px', borderRadius: 'var(--radius-sm)', marginBottom: '24px', border: '1px solid var(--border-color)' }}>
             <button
               onClick={() => { setAuthTab('login'); setLoginError(null); }}
-              style={{ padding: '8px', border: 'none', borderRadius: '6px', background: authTab === 'login' ? 'rgba(0, 242, 254, 0.15)' : 'transparent', color: authTab === 'login' ? 'var(--accent-cyan)' : 'var(--text-secondary)', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s' }}
+              style={{ padding: '8px', border: 'none', borderRadius: '6px', background: authTab === 'login' ? 'var(--gov-navy)' : 'transparent', color: authTab === 'login' ? '#fff' : 'var(--text-secondary)', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s' }}
             >
               Sign In
             </button>
             <button
               onClick={() => { setAuthTab('register'); setRegNotice(null); }}
-              style={{ padding: '8px', border: 'none', borderRadius: '6px', background: authTab === 'register' ? 'rgba(0, 242, 254, 0.15)' : 'transparent', color: authTab === 'register' ? 'var(--accent-cyan)' : 'var(--text-secondary)', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s' }}
+              style={{ padding: '8px', border: 'none', borderRadius: '6px', background: authTab === 'register' ? 'var(--gov-navy)' : 'transparent', color: authTab === 'register' ? '#fff' : 'var(--text-secondary)', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.2s' }}
             >
               Register Officer
             </button>
@@ -1869,7 +1884,7 @@ export default function App() {
               </div>
 
               {loginError && (
-                <div style={{ padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(244, 63, 94, 0.15)', border: '1px solid rgba(244, 63, 94, 0.4)', color: 'var(--accent-rose)', fontSize: '0.82rem', marginBottom: '16px' }}>
+                <div style={{ padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(185,28,28,0.08)', border: '1px solid rgba(185,28,28,0.3)', color: 'var(--accent-rose)', fontSize: '0.82rem', marginBottom: '16px' }}>
                   {loginError}
                 </div>
               )}
@@ -1906,7 +1921,7 @@ export default function App() {
               {/* Step 2: 6-Digit Email OTP */}
               {loginStep === 'otp' && (
                 <form onSubmit={handleLoginOtp} className="form-container">
-                  <div style={{ padding: '10px', background: 'rgba(0, 242, 254, 0.08)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(0, 242, 254, 0.2)', fontSize: '0.82rem', color: 'var(--accent-cyan)', marginBottom: '12px' }}>
+                  <div style={{ padding: '10px', background: 'var(--bg-section)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(6,59,130,0.2)', fontSize: '0.82rem', color: 'var(--gov-navy)', marginBottom: '12px' }}>
                     Step 1 complete! Verification OTP sent to <b>{loginUsername}</b>.
                   </div>
                   <div className="form-group">
@@ -2346,6 +2361,18 @@ export default function App() {
               )}
             </div>
           )}
+
+          {/* Quick Skip Dev Button (Preserves full login/register UI above) */}
+          <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
+            <button
+              type="button"
+              onClick={loginWithDefaultOfficer}
+              className="btn btn-secondary"
+              style={{ width: '100%', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+            >
+              <span>⚡</span> Skip Login &amp; Enter Dashboard Directly
+            </button>
+          </div>
         </div>
 
         {/* Toasts */}
@@ -2401,9 +2428,9 @@ export default function App() {
           </button>
 
           {/* User profile & Logout */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 10px', background: 'rgba(255,255,255,0.05)', borderRadius: '20px', border: '1px solid var(--border-color)' }}>
-            <User size={14} color="var(--accent-cyan)" />
-            <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{currentUser?.username || ''}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 12px', background: 'var(--bg-section)', borderRadius: '20px', border: '1px solid rgba(6,59,130,0.2)' }}>
+            <User size={14} color="var(--gov-navy)" />
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--gov-navy-dark)' }}>{currentUser?.username || ''}</span>
             <button
               onClick={handleLogout}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', padding: '2px' }}

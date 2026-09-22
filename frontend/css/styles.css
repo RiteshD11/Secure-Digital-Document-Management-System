@@ -1,33 +1,39 @@
 :root {
-    --bg-base: #0a0e17;
-    --bg-surface: #111827;
-    --bg-card: rgba(17, 24, 39, 0.75);
-    --border-color: rgba(255, 255, 255, 0.08);
-    --border-hover: rgba(0, 242, 254, 0.4);
-    
-    --text-primary: #f9fafb;
-    --text-secondary: #9ca3af;
-    --text-muted: #6b7280;
-
-    --accent-cyan: #00f2fe;
-    --accent-cyan-glow: rgba(0, 242, 254, 0.25);
-    --accent-emerald: #10b981;
-    --accent-emerald-glow: rgba(16, 185, 129, 0.25);
-    --accent-amber: #f59e0b;
-    --accent-amber-glow: rgba(245, 158, 11, 0.25);
-    --accent-rose: #f43f5e;
-    --accent-rose-glow: rgba(244, 63, 94, 0.25);
-    --accent-violet: #8b5cf6;
-
-    --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
-
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 18px;
-    --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-    --shadow-glow: 0 0 20px rgba(0, 242, 254, 0.15);
+    --gov-navy:         #063B82;
+    --gov-navy-dark:    #0B2D5C;
+    --gov-navy-medium:  #145DA0;
+    --gov-navy-light:   #1A70B8;
+    --bg-base:          #F7F9FC;
+    --bg-surface:       #FFFFFF;
+    --bg-card:          #FFFFFF;
+    --bg-section:       #EAF3FF;
+    --bg-subtle:        #F5F8FC;
+    --border-color:     #D6DCE5;
+    --border-strong:    #B8C4D4;
+    --border-hover:     #145DA0;
+    --text-primary:     #1E293B;
+    --text-secondary:   #52627A;
+    --text-muted:       #8898AA;
+    --text-light:       #A9B8CC;
+    --saffron:          #FF9933;
+    --gov-green:        #138808;
+    --accent-cyan:      #145DA0;
+    --accent-cyan-glow: rgba(20,93,160,0.15);
+    --accent-emerald:   #138808;
+    --accent-emerald-glow: rgba(19,136,8,0.15);
+    --accent-amber:     #D97706;
+    --accent-amber-glow: rgba(217,119,6,0.15);
+    --accent-rose:      #B91C1C;
+    --accent-rose-glow: rgba(185,28,28,0.15);
+    --accent-violet:    #063B82;
+    --font-heading: 'Inter','Noto Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+    --font-body:    'Inter','Noto Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+    --font-mono:    'JetBrains Mono','Courier New',monospace;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --shadow-card: 0 1px 4px rgba(6,59,130,0.08),0 4px 16px rgba(6,59,130,0.06);
+    --shadow-glow: 0 0 0 3px rgba(20,93,160,0.15);
 }
 
 * {
@@ -1172,9 +1178,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     padding: 10px 14px;
-    background: rgba(0, 0, 0, 0.35);
+    background: var(--bg-subtle);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
 }
@@ -1189,13 +1195,8 @@ body {
     transition: all 0.2s ease;
 }
 
-.mfa-step-item.active {
-    color: var(--accent-cyan);
-}
-
-.mfa-step-item.completed {
-    color: var(--accent-emerald);
-}
+.mfa-step-item.active    { color: var(--gov-navy-medium); }
+.mfa-step-item.completed { color: var(--accent-emerald); }
 
 .mfa-step-badge {
     width: 20px;
@@ -1206,23 +1207,13 @@ body {
     justify-content: center;
     font-size: 0.68rem;
     font-family: var(--font-mono);
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--bg-section);
     border: 1px solid var(--border-color);
     color: var(--text-muted);
 }
 
-.mfa-step-item.active .mfa-step-badge {
-    background: rgba(0, 242, 254, 0.15);
-    border-color: var(--accent-cyan);
-    color: var(--accent-cyan);
-    box-shadow: 0 0 8px var(--accent-cyan-glow);
-}
-
-.mfa-step-item.completed .mfa-step-badge {
-    background: rgba(16, 185, 129, 0.15);
-    border-color: var(--accent-emerald);
-    color: var(--accent-emerald);
-}
+.mfa-step-item.active    .mfa-step-badge { background: rgba(20,93,160,0.12); border-color: var(--gov-navy-medium); color: var(--gov-navy-medium); }
+.mfa-step-item.completed .mfa-step-badge { background: rgba(19,136,8,0.12);  border-color: var(--accent-emerald); color: var(--accent-emerald); }
 
 .mfa-step-divider {
     flex: 1;
@@ -1231,8 +1222,4 @@ body {
     margin: 0 6px;
 }
 
-.mfa-step-divider.active {
-    background: var(--accent-emerald);
-}
-
-
+.mfa-step-divider.active { background: var(--accent-emerald); }
