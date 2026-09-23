@@ -1831,10 +1831,10 @@ export default function App() {
       <div style={{ height: '100vh', display: 'flex', width: '100%', overflow: 'hidden' }}>
         {/* LEFT COLUMN - Image */}
         <div style={{ flex: '1', display: 'flex', flexDirection: 'column', position: 'relative', background: '#f8fafc' }} className="auth-left-col">
-          <img 
-            src="/audit-bg.jpeg" 
-            alt="Authentication Background" 
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} 
+          <img
+            src="/audit-bg.jpeg"
+            alt="Authentication Background"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
           />
         </div>
 
@@ -1844,196 +1844,406 @@ export default function App() {
             <div style={{ marginBottom: '16px' }}>
             </div>
 
-          {/* SIGN IN TAB */}
-          {authTab === 'login' && (
-            <div>
+            {/* SIGN IN TAB */}
+            {authTab === 'login' && (
+              <div>
 
 
-              {loginError && (
-                <div style={{ padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(185,28,28,0.08)', border: '1px solid rgba(185,28,28,0.3)', color: 'var(--accent-rose)', fontSize: '0.82rem', marginBottom: '16px' }}>
-                  {loginError}
-                </div>
-              )}
+                {loginError && (
+                  <div style={{ padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(185,28,28,0.08)', border: '1px solid rgba(185,28,28,0.3)', color: 'var(--accent-rose)', fontSize: '0.82rem', marginBottom: '16px' }}>
+                    {loginError}
+                  </div>
+                )}
 
-              {/* Step 1: Password Credentials */}
-              {loginStep === 'credentials' && (
-                <form onSubmit={handleLoginPassword} className="form-container">
-                  <div className="form-group" style={{ marginBottom: '16px' }}>
-                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                      <User size={18} style={{ position: 'absolute', left: '14px', color: '#64748b' }} />
+                {/* Step 1: Password Credentials */}
+                {loginStep === 'credentials' && (
+                  <form onSubmit={handleLoginPassword} className="form-container">
+                    <div className="form-group" style={{ marginBottom: '16px' }}>
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <User size={18} style={{ position: 'absolute', left: '14px', color: '#64748b' }} />
+                        <input
+                          type="text"
+                          value={loginUsername}
+                          onChange={e => setLoginUsername(e.target.value)}
+                          placeholder="Username / Email ID"
+                          style={{ width: '100%', padding: '12px 14px 12px 42px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="form-group" style={{ marginBottom: '16px' }}>
+                      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <Lock size={18} style={{ position: 'absolute', left: '14px', color: '#64748b' }} />
+                        <input
+                          type="password"
+                          value={loginPassword}
+                          onChange={e => setLoginPassword(e.target.value)}
+                          placeholder="Password"
+                          style={{ width: '100%', padding: '12px 42px 12px 42px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
+                          required
+                        />
+                        <Eye size={18} style={{ position: 'absolute', right: '14px', color: '#64748b', cursor: 'pointer' }} />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '24px', fontSize: '0.85rem' }}>
+                      <a href="#" style={{ color: '#063B82', fontWeight: 600, textDecoration: 'none' }}>Forgot Password?</a>
+                    </div>
+
+                    <button type="submit" className="btn btn-primary" disabled={loginLoading} style={{ width: '100%', padding: '12px', fontSize: '1rem', background: '#063B82', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+                      {loginLoading ? 'Signing In...' : 'Sign In'}
+                      {!loginLoading && <span>&rarr;</span>}
+                    </button>
+
+                    <button type="button" style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #063B82', background: 'transparent', color: '#063B82', fontSize: '0.95rem', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '16px' }}>
+                      <Database size={18} /> Login with SOS
+                    </button>
+
+                    <div style={{ marginTop: '32px', textAlign: 'left', fontSize: '0.85rem', color: '#64748b' }}>
+                      Don't have an account? <span onClick={() => { setAuthTab('register'); setLoginError(null); }} style={{ color: '#063B82', fontWeight: 600, cursor: 'pointer' }}>Register Here</span>
+                    </div>
+                  </form>
+                )}
+
+                {/* Step 2: 6-Digit Email OTP */}
+                {loginStep === 'otp' && (
+                  <form onSubmit={handleLoginOtp} className="form-container">
+                    <div style={{ padding: '10px', background: 'var(--bg-section)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(6,59,130,0.2)', fontSize: '0.82rem', color: 'var(--gov-navy)', marginBottom: '12px' }}>
+                      Step 1 complete! Verification OTP sent to <b>{loginUsername}</b>.
+                    </div>
+                    <div className="form-group">
+                      <label>6-Digit Verification OTP</label>
                       <input
                         type="text"
-                        value={loginUsername}
-                        onChange={e => setLoginUsername(e.target.value)}
-                        placeholder="Username / Email ID"
-                        style={{ width: '100%', padding: '12px 14px 12px 42px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
+                        maxLength={6}
+                        value={loginOtp}
+                        onChange={e => setLoginOtp(e.target.value)}
+                        placeholder="123456"
+                        style={{ textAlign: 'center', fontSize: '1.4rem', letterSpacing: '6px', fontFamily: 'var(--font-mono)' }}
                         required
                       />
                     </div>
-                  </div>
-                  <div className="form-group" style={{ marginBottom: '16px' }}>
-                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                      <Lock size={18} style={{ position: 'absolute', left: '14px', color: '#64748b' }} />
-                      <input
-                        type="password"
-                        value={loginPassword}
-                        onChange={e => setLoginPassword(e.target.value)}
-                        placeholder="Password"
-                        style={{ width: '100%', padding: '12px 42px 12px 42px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.95rem' }}
-                        required
-                      />
-                      <Eye size={18} style={{ position: 'absolute', right: '14px', color: '#64748b', cursor: 'pointer' }} />
-                    </div>
-                  </div>
+                    <button type="submit" className="btn btn-primary" disabled={loginLoading}>
+                      {loginLoading ? 'Verifying OTP...' : 'Verify OTP & Continue'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setLoginStep('credentials'); setLoginOtp(''); }}
+                      className="btn btn-secondary"
+                      style={{ marginTop: '4px' }}
+                    >
+                      Back to Password
+                    </button>
+                  </form>
+                )}
 
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '24px', fontSize: '0.85rem' }}>
-                    <a href="#" style={{ color: '#063B82', fontWeight: 600, textDecoration: 'none' }}>Forgot Password?</a>
-                  </div>
-
-                  <button type="submit" className="btn btn-primary" disabled={loginLoading} style={{ width: '100%', padding: '12px', fontSize: '1rem', background: '#063B82', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
-                    {loginLoading ? 'Signing In...' : 'Sign In'}
-                    {!loginLoading && <span>&rarr;</span>}
-                  </button>
-
-                  <button type="button" style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #063B82', background: 'transparent', color: '#063B82', fontSize: '0.95rem', fontWeight: 600, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '16px' }}>
-                    <Database size={18} /> Login with SOS
-                  </button>
-
-                  <div style={{ marginTop: '32px', textAlign: 'left', fontSize: '0.85rem', color: '#64748b' }}>
-                    Don't have an account? <span onClick={() => { setAuthTab('register'); setLoginError(null); }} style={{ color: '#063B82', fontWeight: 600, cursor: 'pointer' }}>Register Here</span>
-                  </div>
-                </form>
-              )}
-
-              {/* Step 2: 6-Digit Email OTP */}
-              {loginStep === 'otp' && (
-                <form onSubmit={handleLoginOtp} className="form-container">
-                  <div style={{ padding: '10px', background: 'var(--bg-section)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(6,59,130,0.2)', fontSize: '0.82rem', color: 'var(--gov-navy)', marginBottom: '12px' }}>
-                    Step 1 complete! Verification OTP sent to <b>{loginUsername}</b>.
-                  </div>
-                  <div className="form-group">
-                    <label>6-Digit Verification OTP</label>
-                    <input
-                      type="text"
-                      maxLength={6}
-                      value={loginOtp}
-                      onChange={e => setLoginOtp(e.target.value)}
-                      placeholder="123456"
-                      style={{ textAlign: 'center', fontSize: '1.4rem', letterSpacing: '6px', fontFamily: 'var(--font-mono)' }}
-                      required
-                    />
-                  </div>
-                  <button type="submit" className="btn btn-primary" disabled={loginLoading}>
-                    {loginLoading ? 'Verifying OTP...' : 'Verify OTP & Continue'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setLoginStep('credentials'); setLoginOtp(''); }}
-                    className="btn btn-secondary"
-                    style={{ marginTop: '4px' }}
-                  >
-                    Back to Password
-                  </button>
-                </form>
-              )}
-
-              {/* Step 3: Face Biometric Authentication */}
-              {loginStep === 'face' && (
-                <div className="face-auth-card">
-                  <div className="face-auth-header">
-                    <div className="face-auth-title">
-                      <ScanFace size={22} style={{ color: 'var(--accent-cyan)' }} />
-                      <span>Biometric Face Verification</span>
-                    </div>
-                    <p className="face-auth-subtitle">
-                      Look directly into the camera to capture your face photo for identity verification.
-                    </p>
-                  </div>
-
-                  {faceError && (
-                    <div style={{ padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(244, 63, 94, 0.15)', border: '1px solid rgba(244, 63, 94, 0.4)', color: 'var(--accent-rose)', fontSize: '0.82rem', marginBottom: '14px' }}>
-                      {faceError}
-                    </div>
-                  )}
-
-                  {faceVerifying ? (
-                    <div className="face-verifying-banner">
-                      <div className="face-scan-pulse">
-                        <ScanFace size={28} />
+                {/* Step 3: Face Biometric Authentication */}
+                {loginStep === 'face' && (
+                  <div className="face-auth-card">
+                    <div className="face-auth-header">
+                      <div className="face-auth-title">
+                        <ScanFace size={22} style={{ color: 'var(--accent-cyan)' }} />
+                        <span>Biometric Face Verification</span>
                       </div>
-                      <div style={{ fontWeight: 600, color: 'var(--accent-cyan)', fontSize: '0.95rem' }}>
-                        Verifying your identity...
-                      </div>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                        Comparing facial frame against registered biometric profile...
-                      </div>
+                      <p className="face-auth-subtitle">
+                        Look directly into the camera to capture your face photo for identity verification.
+                      </p>
                     </div>
-                  ) : (
-                    <div>
-                      <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '12px', textAlign: 'center' }}>
-                        Authenticating as: <b style={{ color: 'var(--accent-cyan)' }}>{faceLoginEmail || loginUsername}</b>
-                      </div>
 
-                      {/* State 1: Photo Preview Mode (when captured from Camera) */}
-                      {faceLivePreview ? (
-                        <div className="photo-preview-card" style={{ marginBottom: '14px' }}>
-                          <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                            CONFIRM YOUR PHOTO
-                          </div>
-                          <div className="photo-preview-image-wrap">
-                            <img
-                              src={faceLivePreview}
-                              alt="Captured Verification Photo"
-                              className="photo-preview-image"
-                            />
-                          </div>
-                          <div className="photo-action-buttons">
-                            <button
-                              type="button"
-                              onClick={retakeFacePhoto}
-                              className="btn btn-secondary"
-                              style={{ fontSize: '0.82rem', padding: '6px 14px', display: 'flex', alignItems: 'center', gap: '4px' }}
-                            >
-                              <RotateCcw size={14} /> Retake Photo
-                            </button>
-                            <button
-                              type="button"
-                              onClick={handleVerifyFaceLogin}
-                              className="btn btn-primary"
-                              disabled={faceVerifying || (!faceLoginEmail && !loginUsername)}
-                              style={{ fontSize: '0.82rem', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '6px' }}
-                            >
-                              <Check size={14} /> Verify &amp; Sign In
-                            </button>
-                          </div>
+                    {faceError && (
+                      <div style={{ padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: 'rgba(244, 63, 94, 0.15)', border: '1px solid rgba(244, 63, 94, 0.4)', color: 'var(--accent-rose)', fontSize: '0.82rem', marginBottom: '14px' }}>
+                        {faceError}
+                      </div>
+                    )}
+
+                    {faceVerifying ? (
+                      <div className="face-verifying-banner">
+                        <div className="face-scan-pulse">
+                          <ScanFace size={28} />
                         </div>
-                      ) : (
-                        /* State 2: Live Camera View Directly */
-                        <div className="camera-feed-container" style={{ marginBottom: '14px' }}>
+                        <div style={{ fontWeight: 600, color: 'var(--accent-cyan)', fontSize: '0.95rem' }}>
+                          Verifying your identity...
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                          Comparing facial frame against registered biometric profile...
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '12px', textAlign: 'center' }}>
+                          Authenticating as: <b style={{ color: 'var(--accent-cyan)' }}>{faceLoginEmail || loginUsername}</b>
+                        </div>
+
+                        {/* State 1: Photo Preview Mode (when captured from Camera) */}
+                        {faceLivePreview ? (
+                          <div className="photo-preview-card" style={{ marginBottom: '14px' }}>
+                            <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                              CONFIRM YOUR PHOTO
+                            </div>
+                            <div className="photo-preview-image-wrap">
+                              <img
+                                src={faceLivePreview}
+                                alt="Captured Verification Photo"
+                                className="photo-preview-image"
+                              />
+                            </div>
+                            <div className="photo-action-buttons">
+                              <button
+                                type="button"
+                                onClick={retakeFacePhoto}
+                                className="btn btn-secondary"
+                                style={{ fontSize: '0.82rem', padding: '6px 14px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                              >
+                                <RotateCcw size={14} /> Retake Photo
+                              </button>
+                              <button
+                                type="button"
+                                onClick={handleVerifyFaceLogin}
+                                className="btn btn-primary"
+                                disabled={faceVerifying || (!faceLoginEmail && !loginUsername)}
+                                style={{ fontSize: '0.82rem', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                              >
+                                <Check size={14} /> Verify &amp; Sign In
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          /* State 2: Live Camera View Directly */
+                          <div className="camera-feed-container" style={{ marginBottom: '14px' }}>
+                            <div className="camera-overlay-badge">
+                              <span className="camera-rec-dot"></span>
+                              <span>LIVE CAMERA</span>
+                            </div>
+                            <video
+                              ref={faceVideoRef}
+                              autoPlay
+                              playsInline
+                              muted
+                              className="camera-video-element"
+                            />
+                            <div className="camera-controls-bar">
+                              <button
+                                type="button"
+                                onClick={captureFacePhoto}
+                                className="btn btn-primary"
+                                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                              >
+                                <Camera size={16} />
+                                Capture Face
+                              </button>
+                              <button
+                                type="button"
+                                onClick={cancelFaceLogin}
+                                className="btn btn-secondary"
+                                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                              >
+                                <X size={16} />
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={cancelFaceLogin}
+                          className="btn btn-secondary"
+                          style={{ width: '100%', marginTop: '6px' }}
+                        >
+                          Back to OTP Verification
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* REGISTER TAB */}
+            {authTab === 'register' && (
+              <div>
+                {regNotice && (
+                  <div style={{ padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: regNotice.type === 'error' ? 'rgba(244, 63, 94, 0.15)' : 'rgba(16, 185, 129, 0.15)', border: `1px solid ${regNotice.type === 'error' ? 'rgba(244, 63, 94, 0.4)' : 'rgba(16, 185, 129, 0.4)'}`, color: regNotice.type === 'error' ? 'var(--accent-rose)' : 'var(--accent-emerald)', fontSize: '0.82rem', marginBottom: '16px' }}>
+                    {regNotice.message}
+                  </div>
+                )}
+
+                {regStep === 'email' && (
+                  <form onSubmit={handleRegSendEmail} className="form-container">
+                    <div className="form-group">
+                      <label>Official Email Address</label>
+                      <input
+                        type="email"
+                        value={regEmail}
+                        onChange={e => setRegEmail(e.target.value)}
+                        placeholder="officer@police.gov.in"
+                        required
+                      />
+                    </div>
+                    <button type="submit" className="btn btn-primary" disabled={regLoading}>
+                      {regLoading ? 'Sending OTP...' : 'Send Verification OTP'}
+                    </button>
+                  </form>
+                )}
+
+                {regStep === 'otp' && (
+                  <form onSubmit={handleRegVerifyOtp} className="form-container">
+                    <div className="form-group">
+                      <label>6-Digit Email OTP</label>
+                      <input
+                        type="text"
+                        maxLength={6}
+                        value={regOtp}
+                        onChange={e => setRegOtp(e.target.value)}
+                        placeholder="123456"
+                        style={{ textAlign: 'center', fontSize: '1.4rem', letterSpacing: '6px', fontFamily: 'var(--font-mono)' }}
+                        required
+                      />
+                    </div>
+                    <button type="submit" className="btn btn-primary" disabled={regLoading}>
+                      {regLoading ? 'Verifying...' : 'Verify OTP'}
+                    </button>
+                    <button type="button" onClick={() => setRegStep('email')} className="btn btn-secondary">
+                      Back to Email
+                    </button>
+                  </form>
+                )}
+
+                {regStep === 'profile' && (
+                  <form onSubmit={handleRegSaveProfile} className="form-container">
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>First Name</label>
+                        <input
+                          type="text"
+                          value={regFirstName}
+                          onChange={e => setRegFirstName(e.target.value)}
+                          placeholder="Om"
+                          required
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Last Name</label>
+                        <input
+                          type="text"
+                          value={regLastName}
+                          onChange={e => setRegLastName(e.target.value)}
+                          placeholder="Bichare"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Password</label>
+                        <input
+                          type="password"
+                          value={regPassword}
+                          onChange={e => setRegPassword(e.target.value)}
+                          placeholder="••••••••"
+                          required
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Confirm Password</label>
+                        <input
+                          type="password"
+                          value={regConfirmPassword}
+                          onChange={e => setRegConfirmPassword(e.target.value)}
+                          placeholder="••••••••"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Official Position / Rank</label>
+                      <select value={regPosition} onChange={e => setRegPosition(e.target.value)}>
+                        <option value="Investigating Officer">Investigating Officer (Cyber Crime / CID)</option>
+                        <option value="Forensic Analyst">Forensic Analyst (FSL Lab)</option>
+                        <option value="Malkhana In-Charge">Malkhana In-Charge (Custody Vault)</option>
+                        <option value="Public Prosecutor">Public Prosecutor / Legal Advisor</option>
+                        <option value="Judicial Magistrate">Judicial Magistrate / Judge</option>
+                      </select>
+                    </div>
+
+                    <div className="form-row">
+                      <div className="form-group">
+                        <label>Aadhaar Number (12 digits)</label>
+                        <input
+                          type="text"
+                          value={regAadhar}
+                          onChange={e => setRegAadhar(e.target.value)}
+                          maxLength={12}
+                          required
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Phone Number</label>
+                        <input
+                          type="text"
+                          value={regPhone}
+                          onChange={e => setRegPhone(e.target.value)}
+                          maxLength={10}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    {/* PROFILE PHOTO SECTION */}
+                    <div className="profile-photo-section">
+                      <div className="photo-section-header">
+                        <div className="photo-section-title">
+                          <ImageIcon size={18} style={{ color: 'var(--accent-cyan)' }} />
+                          <span>Profile Photo</span>
+                        </div>
+                        <p className="photo-section-subtitle">
+                          Provide a photo for your official officer identification profile.
+                        </p>
+                      </div>
+
+                      {/* Hidden file input for Upload from PC */}
+                      <input
+                        type="file"
+                        ref={photoFileInputRef}
+                        onChange={handlePhotoFileSelect}
+                        accept="image/jpeg,image/png,image/webp,image/jpg"
+                        style={{ display: 'none' }}
+                      />
+
+                      {/* State 1: Live Camera View */}
+                      {regPhotoMode === 'camera' && (
+                        <div className="camera-feed-container">
                           <div className="camera-overlay-badge">
                             <span className="camera-rec-dot"></span>
                             <span>LIVE CAMERA</span>
                           </div>
                           <video
-                            ref={faceVideoRef}
+                            ref={videoRef}
                             autoPlay
                             playsInline
                             muted
                             className="camera-video-element"
                           />
+                          {cameraError && (
+                            <div style={{ padding: '12px', textAlign: 'center', color: 'var(--accent-rose)', fontSize: '0.82rem' }}>
+                              {cameraError}
+                            </div>
+                          )}
                           <div className="camera-controls-bar">
                             <button
                               type="button"
-                              onClick={captureFacePhoto}
+                              onClick={capturePhoto}
                               className="btn btn-primary"
                               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                             >
                               <Camera size={16} />
-                              Capture Face
+                              Capture Photo
                             </button>
                             <button
                               type="button"
-                              onClick={cancelFaceLogin}
+                              onClick={stopCamera}
                               className="btn btn-secondary"
                               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                             >
@@ -2044,327 +2254,117 @@ export default function App() {
                         </div>
                       )}
 
-                      <button
-                        type="button"
-                        onClick={cancelFaceLogin}
-                        className="btn btn-secondary"
-                        style={{ width: '100%', marginTop: '6px' }}
-                      >
-                        Back to OTP Verification
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* REGISTER TAB */}
-          {authTab === 'register' && (
-            <div>
-              {regNotice && (
-                <div style={{ padding: '10px 14px', borderRadius: 'var(--radius-sm)', background: regNotice.type === 'error' ? 'rgba(244, 63, 94, 0.15)' : 'rgba(16, 185, 129, 0.15)', border: `1px solid ${regNotice.type === 'error' ? 'rgba(244, 63, 94, 0.4)' : 'rgba(16, 185, 129, 0.4)'}`, color: regNotice.type === 'error' ? 'var(--accent-rose)' : 'var(--accent-emerald)', fontSize: '0.82rem', marginBottom: '16px' }}>
-                  {regNotice.message}
-                </div>
-              )}
-
-              {regStep === 'email' && (
-                <form onSubmit={handleRegSendEmail} className="form-container">
-                  <div className="form-group">
-                    <label>Official Email Address</label>
-                    <input
-                      type="email"
-                      value={regEmail}
-                      onChange={e => setRegEmail(e.target.value)}
-                      placeholder="officer@police.gov.in"
-                      required
-                    />
-                  </div>
-                  <button type="submit" className="btn btn-primary" disabled={regLoading}>
-                    {regLoading ? 'Sending OTP...' : 'Send Verification OTP'}
-                  </button>
-                </form>
-              )}
-
-              {regStep === 'otp' && (
-                <form onSubmit={handleRegVerifyOtp} className="form-container">
-                  <div className="form-group">
-                    <label>6-Digit Email OTP</label>
-                    <input
-                      type="text"
-                      maxLength={6}
-                      value={regOtp}
-                      onChange={e => setRegOtp(e.target.value)}
-                      placeholder="123456"
-                      style={{ textAlign: 'center', fontSize: '1.4rem', letterSpacing: '6px', fontFamily: 'var(--font-mono)' }}
-                      required
-                    />
-                  </div>
-                  <button type="submit" className="btn btn-primary" disabled={regLoading}>
-                    {regLoading ? 'Verifying...' : 'Verify OTP'}
-                  </button>
-                  <button type="button" onClick={() => setRegStep('email')} className="btn btn-secondary">
-                    Back to Email
-                  </button>
-                </form>
-              )}
-
-              {regStep === 'profile' && (
-                <form onSubmit={handleRegSaveProfile} className="form-container">
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>First Name</label>
-                      <input
-                        type="text"
-                        value={regFirstName}
-                        onChange={e => setRegFirstName(e.target.value)}
-                        placeholder="Om"
-                        required
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Last Name</label>
-                      <input
-                        type="text"
-                        value={regLastName}
-                        onChange={e => setRegLastName(e.target.value)}
-                        placeholder="Bichare"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Password</label>
-                      <input
-                        type="password"
-                        value={regPassword}
-                        onChange={e => setRegPassword(e.target.value)}
-                        placeholder="••••••••"
-                        required
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Confirm Password</label>
-                      <input
-                        type="password"
-                        value={regConfirmPassword}
-                        onChange={e => setRegConfirmPassword(e.target.value)}
-                        placeholder="••••••••"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Official Position / Rank</label>
-                    <select value={regPosition} onChange={e => setRegPosition(e.target.value)}>
-                      <option value="Investigating Officer">Investigating Officer (Cyber Crime / CID)</option>
-                      <option value="Forensic Analyst">Forensic Analyst (FSL Lab)</option>
-                      <option value="Malkhana In-Charge">Malkhana In-Charge (Custody Vault)</option>
-                      <option value="Public Prosecutor">Public Prosecutor / Legal Advisor</option>
-                      <option value="Judicial Magistrate">Judicial Magistrate / Judge</option>
-                    </select>
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Aadhaar Number (12 digits)</label>
-                      <input
-                        type="text"
-                        value={regAadhar}
-                        onChange={e => setRegAadhar(e.target.value)}
-                        maxLength={12}
-                        required
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Phone Number</label>
-                      <input
-                        type="text"
-                        value={regPhone}
-                        onChange={e => setRegPhone(e.target.value)}
-                        maxLength={10}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  {/* PROFILE PHOTO SECTION */}
-                  <div className="profile-photo-section">
-                    <div className="photo-section-header">
-                      <div className="photo-section-title">
-                        <ImageIcon size={18} style={{ color: 'var(--accent-cyan)' }} />
-                        <span>Profile Photo</span>
-                      </div>
-                      <p className="photo-section-subtitle">
-                        Provide a photo for your official officer identification profile.
-                      </p>
-                    </div>
-
-                    {/* Hidden file input for Upload from PC */}
-                    <input
-                      type="file"
-                      ref={photoFileInputRef}
-                      onChange={handlePhotoFileSelect}
-                      accept="image/jpeg,image/png,image/webp,image/jpg"
-                      style={{ display: 'none' }}
-                    />
-
-                    {/* State 1: Live Camera View */}
-                    {regPhotoMode === 'camera' && (
-                      <div className="camera-feed-container">
-                        <div className="camera-overlay-badge">
-                          <span className="camera-rec-dot"></span>
-                          <span>LIVE CAMERA</span>
-                        </div>
-                        <video
-                          ref={videoRef}
-                          autoPlay
-                          playsInline
-                          muted
-                          className="camera-video-element"
-                        />
-                        {cameraError && (
-                          <div style={{ padding: '12px', textAlign: 'center', color: 'var(--accent-rose)', fontSize: '0.82rem' }}>
-                            {cameraError}
+                      {/* State 2: Photo Preview Box (When photo is selected/captured) */}
+                      {regPhotoMode !== 'camera' && regPhotoPreview && (
+                        <div className="photo-preview-card">
+                          <div className="photo-preview-image-wrap">
+                            <img
+                              src={regPhotoPreview}
+                              alt="Profile Preview"
+                              className="photo-preview-image"
+                            />
                           </div>
-                        )}
-                        <div className="camera-controls-bar">
-                          <button
-                            type="button"
-                            onClick={capturePhoto}
-                            className="btn btn-primary"
-                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                          >
-                            <Camera size={16} />
-                            Capture Photo
-                          </button>
-                          <button
-                            type="button"
-                            onClick={stopCamera}
-                            className="btn btn-secondary"
-                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                          >
-                            <X size={16} />
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    )}
 
-                    {/* State 2: Photo Preview Box (When photo is selected/captured) */}
-                    {regPhotoMode !== 'camera' && regPhotoPreview && (
-                      <div className="photo-preview-card">
-                        <div className="photo-preview-image-wrap">
-                          <img
-                            src={regPhotoPreview}
-                            alt="Profile Preview"
-                            className="photo-preview-image"
-                          />
-                        </div>
+                          <div>
+                            {regPhotoConfirmed ? (
+                              <span className="photo-confirmed-badge">
+                                <Check size={14} /> Photo Confirmed
+                              </span>
+                            ) : (
+                              <span className="photo-pending-badge">
+                                <AlertTriangle size={14} /> Pending Confirmation
+                              </span>
+                            )}
+                          </div>
 
-                        <div>
-                          {regPhotoConfirmed ? (
-                            <span className="photo-confirmed-badge">
-                              <Check size={14} /> Photo Confirmed
-                            </span>
-                          ) : (
-                            <span className="photo-pending-badge">
-                              <AlertTriangle size={14} /> Pending Confirmation
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="photo-action-buttons">
-                          <button
-                            type="button"
-                            onClick={handleChangePhoto}
-                            className="btn btn-secondary"
-                            style={{ fontSize: '0.82rem', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '4px' }}
-                          >
-                            <RotateCcw size={14} /> Change Photo
-                          </button>
-                          {!regPhotoConfirmed ? (
+                          <div className="photo-action-buttons">
                             <button
                               type="button"
-                              onClick={handleConfirmPhoto}
-                              className="btn btn-primary"
-                              style={{ fontSize: '0.82rem', padding: '6px 14px', display: 'flex', alignItems: 'center', gap: '4px' }}
-                            >
-                              <Check size={14} /> Confirm Photo
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={handleRetakePhoto}
+                              onClick={handleChangePhoto}
                               className="btn btn-secondary"
                               style={{ fontSize: '0.82rem', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '4px' }}
                             >
-                              <Camera size={14} /> Retake
+                              <RotateCcw size={14} /> Change Photo
                             </button>
+                            {!regPhotoConfirmed ? (
+                              <button
+                                type="button"
+                                onClick={handleConfirmPhoto}
+                                className="btn btn-primary"
+                                style={{ fontSize: '0.82rem', padding: '6px 14px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                              >
+                                <Check size={14} /> Confirm Photo
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={handleRetakePhoto}
+                                className="btn btn-secondary"
+                                style={{ fontSize: '0.82rem', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                              >
+                                <Camera size={14} /> Retake
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* State 3: Choice Buttons (Upload from PC / Take Photo) */}
+                      {regPhotoMode !== 'camera' && !regPhotoPreview && (
+                        <div>
+                          <div className="photo-options-row">
+                            <button
+                              type="button"
+                              onClick={() => photoFileInputRef.current?.click()}
+                              className="photo-option-btn"
+                            >
+                              <UploadCloud size={24} />
+                              <span>Upload from PC</span>
+                              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>JPG, PNG, WEBP (Max 5MB)</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={startCamera}
+                              className="photo-option-btn"
+                            >
+                              <Camera size={24} />
+                              <span>Take Photo</span>
+                              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Live Camera Capture</span>
+                            </button>
+                          </div>
+                          {cameraError && (
+                            <div style={{ marginTop: '8px', color: 'var(--accent-rose)', fontSize: '0.8rem', textAlign: 'center' }}>
+                              {cameraError}
+                            </div>
                           )}
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
 
-                    {/* State 3: Choice Buttons (Upload from PC / Take Photo) */}
-                    {regPhotoMode !== 'camera' && !regPhotoPreview && (
-                      <div>
-                        <div className="photo-options-row">
-                          <button
-                            type="button"
-                            onClick={() => photoFileInputRef.current?.click()}
-                            className="photo-option-btn"
-                          >
-                            <UploadCloud size={24} />
-                            <span>Upload from PC</span>
-                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>JPG, PNG, WEBP (Max 5MB)</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={startCamera}
-                            className="photo-option-btn"
-                          >
-                            <Camera size={24} />
-                            <span>Take Photo</span>
-                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Live Camera Capture</span>
-                          </button>
-                        </div>
-                        {cameraError && (
-                          <div style={{ marginTop: '8px', color: 'var(--accent-rose)', fontSize: '0.8rem', textAlign: 'center' }}>
-                            {cameraError}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  <button type="submit" className="btn btn-primary" disabled={regLoading}>
-                    {regLoading ? 'Saving Profile...' : 'Save Profile & Complete Registration'}
-                  </button>
-                </form>
-              )}
-              {/* Registration Toggle Footer */}
-              <div style={{ marginTop: '32px', textAlign: 'left', fontSize: '0.85rem', color: '#64748b' }}>
-                Already have an account? <span onClick={() => { setAuthTab('login'); setRegNotice(null); }} style={{ color: '#063B82', fontWeight: 600, cursor: 'pointer' }}>Sign In Here</span>
+                    <button type="submit" className="btn btn-primary" disabled={regLoading}>
+                      {regLoading ? 'Saving Profile...' : 'Save Profile & Complete Registration'}
+                    </button>
+                  </form>
+                )}
+                {/* Registration Toggle Footer */}
+                <div style={{ marginTop: '32px', textAlign: 'left', fontSize: '0.85rem', color: '#64748b' }}>
+                  Already have an account? <span onClick={() => { setAuthTab('login'); setRegNotice(null); }} style={{ color: '#063B82', fontWeight: 600, cursor: 'pointer' }}>Sign In Here</span>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Quick Skip Dev Button (Preserves full login/register UI above) */}
-          <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
-            <button
-              type="button"
-              onClick={loginWithDefaultOfficer}
-              className="btn btn-secondary"
-              style={{ width: '100%', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-            >
-              <span>⚡</span> Skip Login &amp; Enter Dashboard Directly
-            </button>
+            {/* Quick Skip Dev Button (Preserves full login/register UI above) */}
+            <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
+              <button
+                type="button"
+                onClick={loginWithDefaultOfficer}
+                className="btn btn-secondary"
+                style={{ width: '100%', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              >
+                <span>⚡</span> Skip Login &amp; Enter Dashboard Directly
+              </button>
+            </div>
           </div>
-        </div>
         </div>
 
         {/* Toasts */}
@@ -2385,12 +2385,12 @@ export default function App() {
   return (
     <div className="app-container">
       <div style={{ padding: '24px 24px 0 24px', display: 'flex', alignItems: 'center' }}>
-        <h1 style={{ 
-          margin: 0, 
-          fontSize: '1.8rem', 
-          fontWeight: 800, 
-          background: 'linear-gradient(90deg, var(--gov-navy), #3b82f6)', 
-          WebkitBackgroundClip: 'text', 
+        <h1 style={{
+          margin: 0,
+          fontSize: '1.8rem',
+          fontWeight: 800,
+          background: 'linear-gradient(90deg, var(--gov-navy), #3b82f6)',
+          WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           letterSpacing: '0.5px',
           fontFamily: 'var(--font-heading)'
@@ -2410,14 +2410,14 @@ export default function App() {
                 Upload Document
               </button>
             </li>
-            
+
             <li className="nav-item dropdown-wrapper">
               <button
                 className={`nav-tab-btn ${['document-request', 'document-vault'].includes(activeTab) ? 'active' : ''}`}
               >
-                {activeTab === 'document-request' ? 'Document Request ▾' : 
-                 activeTab === 'document-vault' ? 'Documents ▾' : 
-                 'Document Vault ▾'}
+                {activeTab === 'document-request' ? 'Document Request ▾' :
+                  activeTab === 'document-vault' ? 'Documents ▾' :
+                    'Document Vault ▾'}
               </button>
               <ul className="dropdown-menu">
                 <li>
@@ -2437,9 +2437,9 @@ export default function App() {
               <button
                 className={`nav-tab-btn ${['create-case', 'view-cases'].includes(activeTab) ? 'active' : ''}`}
               >
-                {activeTab === 'create-case' ? 'Create Case ▾' : 
-                 activeTab === 'view-cases' ? 'View Cases ▾' : 
-                 'Cases ▾'}
+                {activeTab === 'create-case' ? 'Create Case ▾' :
+                  activeTab === 'view-cases' ? 'View Cases ▾' :
+                    'Cases ▾'}
               </button>
               <ul className="dropdown-menu">
                 <li>
@@ -2454,7 +2454,7 @@ export default function App() {
                 </li>
               </ul>
             </li>
-            
+
             <li className="nav-item">
               <button
                 className={`nav-tab-btn ${activeTab === 'audit' ? 'active' : ''}`}
@@ -2469,10 +2469,10 @@ export default function App() {
             {/* Search Box */}
             <div style={{ position: 'relative' }}>
               <Search size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
-              <input 
-                type="text" 
-                placeholder="Search..." 
-                style={{ padding: '6px 12px 6px 32px', borderRadius: '20px', border: '1px solid var(--border-color)', fontSize: '0.85rem', width: '200px', background: 'var(--bg-subtle)', color: 'var(--text-primary)' }} 
+              <input
+                type="text"
+                placeholder="Search..."
+                style={{ padding: '6px 12px 6px 32px', borderRadius: '20px', border: '1px solid var(--border-color)', fontSize: '0.85rem', width: '200px', background: 'var(--bg-subtle)', color: 'var(--text-primary)' }}
               />
             </div>
 
@@ -2542,7 +2542,7 @@ export default function App() {
                       {cases.map((item, idx) => {
                         const num = item.case_number || item.caseNumber || `CASE-2026-00${idx + 1}`
                         return (
-                          <option key={num} value={num}>
+                          <option key={`${num}-${idx}`} value={num}>
                             {num} - {item.title || 'Legal Case'}
                           </option>
                         )
@@ -2748,323 +2748,126 @@ export default function App() {
 
             {activeTab === 'document-vault' && (
               <div className="table-container">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Doc ID</th>
-                    <th>Filename</th>
-                    <th>Case ID</th>
-                    <th>Type</th>
-                    <th>Classification</th>
-                    <th>Version</th>
-                    <th>Uploaded At</th>
-                    <th style={{ textAlign: 'right' }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredDocs.length === 0 ? (
+                <table className="data-table">
+                  <thead>
                     <tr>
-                      <td colSpan={8} className="empty-state">
-                        {vaultLoading ? 'Loading vault...' : 'No documents in vault. Upload one to get started!'}
-                      </td>
+                      <th>Doc ID</th>
+                      <th>Filename</th>
+                      <th>Case ID</th>
+                      <th>Type</th>
+                      <th>Classification</th>
+                      <th>Version</th>
+                      <th>Uploaded At</th>
+                      <th style={{ textAlign: 'right' }}>Actions</th>
                     </tr>
-                  ) : (
-                    filteredDocs.map(doc => (
-                      <tr key={doc.id}>
-                        <td style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)', fontWeight: 600 }}>
-                          {doc.id}
+                  </thead>
+                  <tbody>
+                    {filteredDocs.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="empty-state">
+                          {vaultLoading ? 'Loading vault...' : 'No documents in vault. Upload one to get started!'}
                         </td>
-                        <td style={{ fontWeight: 500 }}>{doc.originalFilename}</td>
-                        <td>{doc.caseId}</td>
-                        <td>
-                          <span className="card-badge">{doc.documentType}</span>
-                        </td>
-                        <td>
-                          <span className="badge-tag">{doc.classification}</span>
-                        </td>
-                        <td>
-                          <span className="size-badge">v{doc.currentVersion}</span>
-                        </td>
-                        <td style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                          {new Date(doc.createdAt).toLocaleString()}
-                        </td>
-                        <td style={{ textAlign: 'right' }}>
-                          <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center', justifyContent: 'flex-end' }}>
-                            {isDocOwner(doc) ? (
-                              <>
-                                <span className="step-badge success" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                  <Shield size={11} /> Custodian
-                                </span>
-                                {pendingDocOwnerRequests.filter(r => r.documentId === doc.id).length > 0 && (
+                      </tr>
+                    ) : (
+                      filteredDocs.map(doc => (
+                        <tr key={doc.id}>
+                          <td style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)', fontWeight: 600 }}>
+                            {doc.id}
+                          </td>
+                          <td style={{ fontWeight: 500 }}>{doc.originalFilename}</td>
+                          <td>{doc.caseId}</td>
+                          <td>
+                            <span className="card-badge">{doc.documentType}</span>
+                          </td>
+                          <td>
+                            <span className="badge-tag">{doc.classification}</span>
+                          </td>
+                          <td>
+                            <span className="size-badge">v{doc.currentVersion}</span>
+                          </td>
+                          <td style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                            {new Date(doc.createdAt).toLocaleString()}
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center', justifyContent: 'flex-end' }}>
+                              {isDocOwner(doc) ? (
+                                <>
+                                  <span className="step-badge success" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                    <Shield size={11} /> Custodian
+                                  </span>
+                                  {pendingDocOwnerRequests.filter(r => r.documentId === doc.id).length > 0 && (
+                                    <button
+                                      className="btn btn-primary btn-xs"
+                                      onClick={() => setDocReviewModalDoc(doc)}
+                                      title="Review pending access requests for this document"
+                                    >
+                                      Review ({pendingDocOwnerRequests.filter(r => r.documentId === doc.id).length})
+                                    </button>
+                                  )}
+                                </>
+                              ) : hasCaseAccess(doc.caseId) ? (
+                                <>
+                                  {docRequests[doc.id] && (
+                                    <span className={`step-badge ${docRequests[doc.id].status === 'APPROVED' ? 'success' :
+                                      docRequests[doc.id].status === 'REJECTED' ? 'failed' : 'pending'
+                                      }`} style={{ fontSize: '0.68rem' }}>
+                                      {docRequests[doc.id].status}: {docRequests[doc.id].permission}
+                                    </span>
+                                  )}
                                   <button
-                                    className="btn btn-primary btn-xs"
-                                    onClick={() => setDocReviewModalDoc(doc)}
-                                    title="Review pending access requests for this document"
+                                    className={`btn ${docRequests[doc.id]?.status === 'PENDING' ? 'btn-secondary' : 'btn-secondary'} btn-xs`}
+                                    onClick={() => openDocRequestModal(doc)}
+                                    disabled={docRequests[doc.id]?.status === 'PENDING'}
+                                    title={docRequests[doc.id]?.status === 'PENDING' ? 'Access request pending review' : 'Request Document Access'}
                                   >
-                                    Review ({pendingDocOwnerRequests.filter(r => r.documentId === doc.id).length})
+                                    <Shield size={12} /> {docRequests[doc.id]?.status === 'PENDING' ? 'Req Pending' : 'Request Access'}
                                   </button>
-                                )}
-                              </>
-                            ) : hasCaseAccess(doc.caseId) ? (
-                              <>
-                                {docRequests[doc.id] && (
+                                </>
+                              ) : (
+                                docRequests[doc.id] ? (
                                   <span className={`step-badge ${docRequests[doc.id].status === 'APPROVED' ? 'success' :
                                     docRequests[doc.id].status === 'REJECTED' ? 'failed' : 'pending'
                                     }`} style={{ fontSize: '0.68rem' }}>
                                     {docRequests[doc.id].status}: {docRequests[doc.id].permission}
                                   </span>
-                                )}
-                                <button
-                                  className={`btn ${docRequests[doc.id]?.status === 'PENDING' ? 'btn-secondary' : 'btn-secondary'} btn-xs`}
-                                  onClick={() => openDocRequestModal(doc)}
-                                  disabled={docRequests[doc.id]?.status === 'PENDING'}
-                                  title={docRequests[doc.id]?.status === 'PENDING' ? 'Access request pending review' : 'Request Document Access'}
-                                >
-                                  <Shield size={12} /> {docRequests[doc.id]?.status === 'PENDING' ? 'Req Pending' : 'Request Access'}
-                                </button>
-                              </>
-                            ) : (
-                              docRequests[doc.id] ? (
-                                <span className={`step-badge ${docRequests[doc.id].status === 'APPROVED' ? 'success' :
-                                  docRequests[doc.id].status === 'REJECTED' ? 'failed' : 'pending'
-                                  }`} style={{ fontSize: '0.68rem' }}>
-                                  {docRequests[doc.id].status}: {docRequests[doc.id].permission}
-                                </span>
-                              ) : null
-                            )}
-                            <button
-                              className="btn btn-primary btn-xs"
-                              onClick={() => handleOpenViewer(doc)}
-                              disabled={viewerLoading}
-                              title="Open Protected Document Viewer (Copy/Paste Blocked + Watermarked)"
-                              style={{
-                                background: 'linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(79, 172, 254, 0.2))',
-                                borderColor: 'var(--accent-cyan)',
-                                color: 'var(--accent-cyan)',
-                                fontWeight: 600
-                              }}
-                            >
-                              <Eye size={12} /> View
-                            </button>
-                            <button
-                              className="btn btn-secondary btn-xs"
-                              onClick={() => handleDownload(doc)}
-                              title="Download & Verify Integrity"
-                            >
-                              <Download size={12} /> Download
-                            </button>
-                            <button
-                              className="btn btn-secondary btn-xs"
-                              onClick={() => handleVerify(doc)}
-                              title="Audit Cryptographic Proof"
-                            >
-                              <CheckCircle size={12} /> Verify
-                            </button>
-                            <button
-                              className="btn btn-primary btn-xs"
-                              onClick={() => openVersionModal(doc)}
-                              title="Upload New Version"
-                            >
-                              <Plus size={12} /> + Version
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            )}
-
-            {/* Document Owner Review Section (Section 3) */}
-            {activeTab === 'document-request' && (
-              <>
-            {documents.some(d => isDocOwner(d)) && (
-              <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--border-color)' }}>
-                <div className="case-create-heading" style={{ marginBottom: '16px' }}>
-                  <div>
-                    <h3>Document Access Requests (Owner Review)</h3>
-                    <p>Review and authorize permission requests for documents in your custody.</p>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <span className="card-badge" style={{ color: pendingDocOwnerRequests.length > 0 ? 'var(--accent-amber)' : 'inherit' }}>
-                      {pendingDocOwnerRequests.length} Pending
-                    </span>
-                    <button
-                      className="btn btn-secondary btn-xs"
-                      onClick={() => fetchDocOwnerRequests(documents, cases)}
-                      disabled={vaultLoading}
-                      title="Refresh document access requests"
-                    >
-                      <RefreshCw size={12} className={vaultLoading ? 'spin' : ''} /> Refresh
-                    </button>
-                  </div>
-                </div>
-
-                <div className="table-container">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Doc ID</th>
-                        <th>Case ID</th>
-                        <th>Requesting User</th>
-                        <th>Requested Permission</th>
-                        <th>Reason</th>
-                        <th>Date Requested</th>
-                        <th style={{ textAlign: 'right' }}>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pendingDocOwnerRequests.length === 0 ? (
-                        <tr>
-                          <td colSpan={7} className="empty-state">
-                            No pending access requests for documents owned by you.
-                          </td>
-                        </tr>
-                      ) : (
-                        pendingDocOwnerRequests.map(req => (
-                          <tr key={req.id}>
-                            <td>
-                              <strong style={{ color: 'var(--accent-cyan)' }}>{req.documentId}</strong>
-                              {req.docFilename && <div className="table-secondary-text">{req.docFilename}</div>}
-                            </td>
-                            <td style={{ fontFamily: 'var(--font-mono)' }}>{req.caseId || '-'}</td>
-                            <td>
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 500 }}>
-                                <User size={13} style={{ color: 'var(--accent-cyan)' }} />
-                                {req.requestedUserId}
-                              </span>
-                            </td>
-                            <td>
-                              <span className="badge-tag" style={{ fontWeight: 600 }}>
-                                {req.permission}
-                              </span>
-                            </td>
-                            <td>
-                              <div style={{ maxWidth: '280px', whiteSpace: 'normal', fontSize: '0.85rem' }}>
-                                {req.reason || 'No reason provided'}
-                              </div>
-                            </td>
-                            <td style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                              {req.createdAt ? new Date(req.createdAt).toLocaleString() : '-'}
-                            </td>
-                            <td style={{ textAlign: 'right' }}>
-                              <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'flex-end' }}>
-                                <button
-                                  className="btn btn-primary btn-xs"
-                                  disabled={ownerReviewActionLoading === req.id}
-                                  onClick={() => handleReviewDocRequest(req.id, true, req.documentId)}
-                                  title="Approve access"
-                                >
-                                  {ownerReviewActionLoading === req.id ? (
-                                    <>
-                                      <RefreshCw size={12} className="spin" /> Approving...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Check size={12} /> Approve
-                                    </>
-                                  )}
-                                </button>
-                                <button
-                                  className="btn btn-secondary btn-xs"
-                                  disabled={ownerReviewActionLoading === req.id}
-                                  onClick={() => handleReviewDocRequest(req.id, false, req.documentId)}
-                                  title="Reject request"
-                                  style={{ color: '#ef4444' }}
-                                >
-                                  {ownerReviewActionLoading === req.id ? (
-                                    <>
-                                      <RefreshCw size={12} className="spin" /> Rejecting...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <X size={12} /> Reject
-                                    </>
-                                  )}
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-
-            {/* Requester's Document Access Requests Panel (Section 3 & 5) */}
-            <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--border-color)' }}>
-              <div className="case-create-heading" style={{ marginBottom: '16px' }}>
-                <div>
-                  <h3>My Document Access Requests</h3>
-                  <p>Track the review status of your submitted document permission requests.</p>
-                </div>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <span className="card-badge">
-                    {myDocRequests.length} Request{myDocRequests.length !== 1 ? 's' : ''}
-                  </span>
-                  <button
-                    className="btn btn-secondary btn-xs"
-                    onClick={() => fetchDocAccessRequests(documents)}
-                    disabled={vaultLoading}
-                    title="Refresh my document access requests"
-                  >
-                    <RefreshCw size={12} className={vaultLoading ? 'spin' : ''} /> Refresh
-                  </button>
-                </div>
-              </div>
-
-              <div className="table-container">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Doc ID</th>
-                      <th>Case ID</th>
-                      <th>Requested Permission</th>
-                      <th>Reason</th>
-                      <th>Date Requested</th>
-                      <th style={{ textAlign: 'right' }}>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {myDocRequests.length === 0 ? (
-                      <tr>
-                        <td colSpan={6} className="empty-state">
-                          No document access requests submitted yet.
-                        </td>
-                      </tr>
-                    ) : (
-                      myDocRequests.map(req => (
-                        <tr key={req.id}>
-                          <td>
-                            <strong style={{ color: 'var(--accent-cyan)' }}>{req.documentId}</strong>
-                            {req.docFilename && <div className="table-secondary-text">{req.docFilename}</div>}
-                          </td>
-                          <td style={{ fontFamily: 'var(--font-mono)' }}>{req.caseId || '-'}</td>
-                          <td>
-                            <span className="badge-tag" style={{ fontWeight: 600 }}>
-                              {req.permission}
-                            </span>
-                          </td>
-                          <td>
-                            <div style={{ maxWidth: '280px', whiteSpace: 'normal', fontSize: '0.85rem' }}>
-                              {req.reason || 'No reason provided'}
+                                ) : null
+                              )}
+                              <button
+                                className="btn btn-primary btn-xs"
+                                onClick={() => handleOpenViewer(doc)}
+                                disabled={viewerLoading}
+                                title="Open Protected Document Viewer (Copy/Paste Blocked + Watermarked)"
+                                style={{
+                                  background: 'linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(79, 172, 254, 0.2))',
+                                  borderColor: 'var(--accent-cyan)',
+                                  color: 'var(--accent-cyan)',
+                                  fontWeight: 600
+                                }}
+                              >
+                                <Eye size={12} /> View
+                              </button>
+                              <button
+                                className="btn btn-secondary btn-xs"
+                                onClick={() => handleDownload(doc)}
+                                title="Download & Verify Integrity"
+                              >
+                                <Download size={12} /> Download
+                              </button>
+                              <button
+                                className="btn btn-secondary btn-xs"
+                                onClick={() => handleVerify(doc)}
+                                title="Audit Cryptographic Proof"
+                              >
+                                <CheckCircle size={12} /> Verify
+                              </button>
+                              <button
+                                className="btn btn-primary btn-xs"
+                                onClick={() => openVersionModal(doc)}
+                                title="Upload New Version"
+                              >
+                                <Plus size={12} /> + Version
+                              </button>
                             </div>
-                          </td>
-                          <td style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                            {req.createdAt ? new Date(req.createdAt).toLocaleString() : '-'}
-                          </td>
-                          <td style={{ textAlign: 'right' }}>
-                            <span className={`step-badge ${req.status === 'APPROVED' ? 'success' :
-                              req.status === 'REJECTED' ? 'failed' : 'pending'
-                              }`} style={{ fontWeight: 600 }}>
-                              {req.status}
-                            </span>
                           </td>
                         </tr>
                       ))
@@ -3072,7 +2875,204 @@ export default function App() {
                   </tbody>
                 </table>
               </div>
-            </div>
+
+            )}
+
+            {/* Document Owner Review Section (Section 3) */}
+            {activeTab === 'document-request' && (
+              <>
+                {documents.some(d => isDocOwner(d)) && (
+                  <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--border-color)' }}>
+                    <div className="case-create-heading" style={{ marginBottom: '16px' }}>
+                      <div>
+                        <h3>Document Access Requests (Owner Review)</h3>
+                        <p>Review and authorize permission requests for documents in your custody.</p>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <span className="card-badge" style={{ color: pendingDocOwnerRequests.length > 0 ? 'var(--accent-amber)' : 'inherit' }}>
+                          {pendingDocOwnerRequests.length} Pending
+                        </span>
+                        <button
+                          className="btn btn-secondary btn-xs"
+                          onClick={() => fetchDocOwnerRequests(documents, cases)}
+                          disabled={vaultLoading}
+                          title="Refresh document access requests"
+                        >
+                          <RefreshCw size={12} className={vaultLoading ? 'spin' : ''} /> Refresh
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="table-container">
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Doc ID</th>
+                            <th>Case ID</th>
+                            <th>Requesting User</th>
+                            <th>Requested Permission</th>
+                            <th>Reason</th>
+                            <th>Date Requested</th>
+                            <th style={{ textAlign: 'right' }}>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {pendingDocOwnerRequests.length === 0 ? (
+                            <tr>
+                              <td colSpan={7} className="empty-state">
+                                No pending access requests for documents owned by you.
+                              </td>
+                            </tr>
+                          ) : (
+                            pendingDocOwnerRequests.map(req => (
+                              <tr key={req.id}>
+                                <td>
+                                  <strong style={{ color: 'var(--accent-cyan)' }}>{req.documentId}</strong>
+                                  {req.docFilename && <div className="table-secondary-text">{req.docFilename}</div>}
+                                </td>
+                                <td style={{ fontFamily: 'var(--font-mono)' }}>{req.caseId || '-'}</td>
+                                <td>
+                                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 500 }}>
+                                    <User size={13} style={{ color: 'var(--accent-cyan)' }} />
+                                    {req.requestedUserId}
+                                  </span>
+                                </td>
+                                <td>
+                                  <span className="badge-tag" style={{ fontWeight: 600 }}>
+                                    {req.permission}
+                                  </span>
+                                </td>
+                                <td>
+                                  <div style={{ maxWidth: '280px', whiteSpace: 'normal', fontSize: '0.85rem' }}>
+                                    {req.reason || 'No reason provided'}
+                                  </div>
+                                </td>
+                                <td style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                                  {req.createdAt ? new Date(req.createdAt).toLocaleString() : '-'}
+                                </td>
+                                <td style={{ textAlign: 'right' }}>
+                                  <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'flex-end' }}>
+                                    <button
+                                      className="btn btn-primary btn-xs"
+                                      disabled={ownerReviewActionLoading === req.id}
+                                      onClick={() => handleReviewDocRequest(req.id, true, req.documentId)}
+                                      title="Approve access"
+                                    >
+                                      {ownerReviewActionLoading === req.id ? (
+                                        <>
+                                          <RefreshCw size={12} className="spin" /> Approving...
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Check size={12} /> Approve
+                                        </>
+                                      )}
+                                    </button>
+                                    <button
+                                      className="btn btn-secondary btn-xs"
+                                      disabled={ownerReviewActionLoading === req.id}
+                                      onClick={() => handleReviewDocRequest(req.id, false, req.documentId)}
+                                      title="Reject request"
+                                      style={{ color: '#ef4444' }}
+                                    >
+                                      {ownerReviewActionLoading === req.id ? (
+                                        <>
+                                          <RefreshCw size={12} className="spin" /> Rejecting...
+                                        </>
+                                      ) : (
+                                        <>
+                                          <X size={12} /> Reject
+                                        </>
+                                      )}
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+
+                {/* Requester's Document Access Requests Panel (Section 3 & 5) */}
+                <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--border-color)' }}>
+                  <div className="case-create-heading" style={{ marginBottom: '16px' }}>
+                    <div>
+                      <h3>My Document Access Requests</h3>
+                      <p>Track the review status of your submitted document permission requests.</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <span className="card-badge">
+                        {myDocRequests.length} Request{myDocRequests.length !== 1 ? 's' : ''}
+                      </span>
+                      <button
+                        className="btn btn-secondary btn-xs"
+                        onClick={() => fetchDocAccessRequests(documents)}
+                        disabled={vaultLoading}
+                        title="Refresh my document access requests"
+                      >
+                        <RefreshCw size={12} className={vaultLoading ? 'spin' : ''} /> Refresh
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="table-container">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Doc ID</th>
+                          <th>Case ID</th>
+                          <th>Requested Permission</th>
+                          <th>Reason</th>
+                          <th>Date Requested</th>
+                          <th style={{ textAlign: 'right' }}>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {myDocRequests.length === 0 ? (
+                          <tr>
+                            <td colSpan={6} className="empty-state">
+                              No document access requests submitted yet.
+                            </td>
+                          </tr>
+                        ) : (
+                          myDocRequests.map(req => (
+                            <tr key={req.id}>
+                              <td>
+                                <strong style={{ color: 'var(--accent-cyan)' }}>{req.documentId}</strong>
+                                {req.docFilename && <div className="table-secondary-text">{req.docFilename}</div>}
+                              </td>
+                              <td style={{ fontFamily: 'var(--font-mono)' }}>{req.caseId || '-'}</td>
+                              <td>
+                                <span className="badge-tag" style={{ fontWeight: 600 }}>
+                                  {req.permission}
+                                </span>
+                              </td>
+                              <td>
+                                <div style={{ maxWidth: '280px', whiteSpace: 'normal', fontSize: '0.85rem' }}>
+                                  {req.reason || 'No reason provided'}
+                                </div>
+                              </td>
+                              <td style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                                {req.createdAt ? new Date(req.createdAt).toLocaleString() : '-'}
+                              </td>
+                              <td style={{ textAlign: 'right' }}>
+                                <span className={`step-badge ${req.status === 'APPROVED' ? 'success' :
+                                  req.status === 'REJECTED' ? 'failed' : 'pending'
+                                  }`} style={{ fontWeight: 600 }}>
+                                  {req.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </>
             )}
           </section>
@@ -3178,217 +3178,217 @@ export default function App() {
               </form>
             )}
 
-            {activeTab === 'view-cases' && ( <>
+            {activeTab === 'view-cases' && (<>
               <div className="table-container">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Case No</th>
-                    <th>Title</th>
-                    <th>Status</th>
-                    <th>Created By</th>
-                    <th>Documents</th>
-                    <th>Last Updated</th>
-                    <th style={{ textAlign: 'right' }}>Access / Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cases.filter(item => {
-                    const query = caseSearch.trim().toLowerCase()
-                    return `${item.case_number} ${item.title}`.toLowerCase().includes(query)
-                  }).length === 0 ? (
+                <table className="data-table">
+                  <thead>
                     <tr>
-                      <td colSpan={7} className="empty-state">
-                        {casesLoading ? 'Loading assessment list...' : 'No matching cases found.'}
-                      </td>
+                      <th>Case No</th>
+                      <th>Title</th>
+                      <th>Status</th>
+                      <th>Created By</th>
+                      <th>Documents</th>
+                      <th>Last Updated</th>
+                      <th style={{ textAlign: 'right' }}>Access / Actions</th>
                     </tr>
-                  ) : (
-                    cases.filter(item => {
+                  </thead>
+                  <tbody>
+                    {cases.filter(item => {
                       const query = caseSearch.trim().toLowerCase()
                       return `${item.case_number} ${item.title}`.toLowerCase().includes(query)
-                    }).map(item => {
-                      const relatedDocuments = documents.filter(document => document.caseId === item.case_number).length
-                      const status = item.status || 'OPEN'
-                      const req = caseRequests[item.case_number]
-                      const accessible = isCaseAccessible(item)
-                      return (
-                        <tr key={item.caseId || item.case_number}>
-                          <td style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)', fontWeight: 600 }}>
-                            {item.case_number}
-                          </td>
-                          <td>
-                            <strong>{item.title}</strong>
-                            {item.description && <div className="table-secondary-text">{item.description}</div>}
-                          </td>
-                          <td>
-                            <span className={`step-badge ${String(status).toLowerCase() === 'closed' ? 'failed' : 'success'}`}>
-                              {status}
-                            </span>
-                          </td>
-                          <td>{item.created_by || '-'}</td>
-                          <td><span className="card-badge">{relatedDocuments} linked</span></td>
-                          <td style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                            {item.lastUpdate || item.createdAt ? new Date(item.lastUpdate || item.createdAt || '').toLocaleString() : '-'}
-                          </td>
-                          <td style={{ textAlign: 'right' }}>
-                            {isCaseOwner(item) ? (
-                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
-                                <span className="step-badge success" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                  <Shield size={11} /> Owner
-                                </span>
-                                {pendingCaseOwnerRequests.filter(r => r.caseId === item.case_number).length > 0 && (
-                                  <button
-                                    className="btn btn-primary btn-xs"
-                                    onClick={() => setCaseReviewModalCase(item.case_number)}
-                                    title="Review pending access requests for this case"
-                                  >
-                                    Review ({pendingCaseOwnerRequests.filter(r => r.caseId === item.case_number).length})
-                                  </button>
-                                )}
-                              </div>
-                            ) : accessible ? (
-                              <span className="step-badge success" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                <CheckCircle size={11} /> Granted
-                              </span>
-                            ) : (
-                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
-                                {req && (
-                                  <span className={`step-badge ${req.status === 'APPROVED' ? 'success' :
-                                    req.status === 'REJECTED' ? 'failed' : 'pending'
-                                    }`} style={{ fontSize: '0.68rem' }}>
-                                    {req.status}
-                                  </span>
-                                )}
-                                <button
-                                  className={`btn ${req?.status === 'PENDING' ? 'btn-secondary' : 'btn-primary'} btn-xs`}
-                                  onClick={() => openCaseRequestModal(item.case_number)}
-                                  disabled={req?.status === 'PENDING'}
-                                  title={req?.status === 'PENDING' ? 'Access request pending review' : 'Request Case Access'}
-                                >
-                                  <Key size={12} />
-                                  {req?.status === 'PENDING' ? 'Pending' : 'Request Case Access'}
-                                </button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      )
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Case Owner Review Section (Section 3) */}
-            {cases.some(c => isCaseOwner(c)) && (
-              <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--border-color)' }}>
-                <div className="case-create-heading" style={{ marginBottom: '16px' }}>
-                  <div>
-                    <h3>Case Access Requests (Owner Review)</h3>
-                    <p>Authorize or reject officers requesting access to cases registered by you.</p>
-                  </div>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <span className="card-badge" style={{ color: pendingCaseOwnerRequests.length > 0 ? 'var(--accent-amber)' : 'inherit' }}>
-                      {pendingCaseOwnerRequests.length} Pending
-                    </span>
-                    <button
-                      className="btn btn-secondary btn-xs"
-                      onClick={() => fetchCaseOwnerRequests(cases)}
-                      disabled={casesLoading}
-                      title="Refresh case access requests"
-                    >
-                      <RefreshCw size={12} className={casesLoading ? 'spin' : ''} /> Refresh
-                    </button>
-                  </div>
-                </div>
-
-                <div className="table-container">
-                  <table className="data-table">
-                    <thead>
+                    }).length === 0 ? (
                       <tr>
-                        <th>Case No</th>
-                        <th>Requesting User</th>
-                        <th>Reason</th>
-                        <th>Date Requested</th>
-                        <th style={{ textAlign: 'right' }}>Actions</th>
+                        <td colSpan={7} className="empty-state">
+                          {casesLoading ? 'Loading assessment list...' : 'No matching cases found.'}
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {pendingCaseOwnerRequests.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} className="empty-state">
-                            No pending access requests for cases owned by you.
-                          </td>
-                        </tr>
-                      ) : (
-                        pendingCaseOwnerRequests.map(req => (
-                          <tr key={req.id}>
+                    ) : (
+                      cases.filter(item => {
+                        const query = caseSearch.trim().toLowerCase()
+                        return `${item.case_number} ${item.title}`.toLowerCase().includes(query)
+                      }).map(item => {
+                        const relatedDocuments = documents.filter(document => document.caseId === item.case_number).length
+                        const status = item.status || 'OPEN'
+                        const req = caseRequests[item.case_number]
+                        const accessible = isCaseAccessible(item)
+                        return (
+                          <tr key={item.caseId || item.case_number}>
                             <td style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)', fontWeight: 600 }}>
-                              {req.caseId}
-                              {req.caseTitle && <div className="table-secondary-text">{req.caseTitle}</div>}
+                              {item.case_number}
                             </td>
                             <td>
-                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 500 }}>
-                                <User size={13} style={{ color: 'var(--accent-cyan)' }} />
-                                {req.requestedUserId}
+                              <strong>{item.title}</strong>
+                              {item.description && <div className="table-secondary-text">{item.description}</div>}
+                            </td>
+                            <td>
+                              <span className={`step-badge ${String(status).toLowerCase() === 'closed' ? 'failed' : 'success'}`}>
+                                {status}
                               </span>
                             </td>
-                            <td>
-                              <div style={{ maxWidth: '320px', whiteSpace: 'normal', fontSize: '0.85rem' }}>
-                                {req.reason || 'No justification provided'}
-                              </div>
-                            </td>
+                            <td>{item.created_by || '-'}</td>
+                            <td><span className="card-badge">{relatedDocuments} linked</span></td>
                             <td style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                              {req.createdAt ? new Date(req.createdAt).toLocaleString() : '-'}
+                              {item.lastUpdate || item.createdAt ? new Date(item.lastUpdate || item.createdAt || '').toLocaleString() : '-'}
                             </td>
                             <td style={{ textAlign: 'right' }}>
-                              <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'flex-end' }}>
-                                <button
-                                  className="btn btn-primary btn-xs"
-                                  disabled={ownerReviewActionLoading === req.id}
-                                  onClick={() => handleReviewCaseRequest(req.id, true, req.caseId)}
-                                  title="Approve access"
-                                >
-                                  {ownerReviewActionLoading === req.id ? (
-                                    <>
-                                      <RefreshCw size={12} className="spin" /> Approving...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Check size={12} /> Approve
-                                    </>
+                              {isCaseOwner(item) ? (
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
+                                  <span className="step-badge success" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                    <Shield size={11} /> Owner
+                                  </span>
+                                  {pendingCaseOwnerRequests.filter(r => r.caseId === item.case_number).length > 0 && (
+                                    <button
+                                      className="btn btn-primary btn-xs"
+                                      onClick={() => setCaseReviewModalCase(item.case_number)}
+                                      title="Review pending access requests for this case"
+                                    >
+                                      Review ({pendingCaseOwnerRequests.filter(r => r.caseId === item.case_number).length})
+                                    </button>
                                   )}
-                                </button>
-                                <button
-                                  className="btn btn-secondary btn-xs"
-                                  disabled={ownerReviewActionLoading === req.id}
-                                  onClick={() => handleReviewCaseRequest(req.id, false, req.caseId)}
-                                  title="Reject access request"
-                                  style={{ color: '#ef4444' }}
-                                >
-                                  {ownerReviewActionLoading === req.id ? (
-                                    <>
-                                      <RefreshCw size={12} className="spin" /> Rejecting...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <X size={12} /> Reject
-                                    </>
+                                </div>
+                              ) : accessible ? (
+                                <span className="step-badge success" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                  <CheckCircle size={11} /> Granted
+                                </span>
+                              ) : (
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', justifyContent: 'flex-end' }}>
+                                  {req && (
+                                    <span className={`step-badge ${req.status === 'APPROVED' ? 'success' :
+                                      req.status === 'REJECTED' ? 'failed' : 'pending'
+                                      }`} style={{ fontSize: '0.68rem' }}>
+                                      {req.status}
+                                    </span>
                                   )}
-                                </button>
-                              </div>
+                                  <button
+                                    className={`btn ${req?.status === 'PENDING' ? 'btn-secondary' : 'btn-primary'} btn-xs`}
+                                    onClick={() => openCaseRequestModal(item.case_number)}
+                                    disabled={req?.status === 'PENDING'}
+                                    title={req?.status === 'PENDING' ? 'Access request pending review' : 'Request Case Access'}
+                                  >
+                                    <Key size={12} />
+                                    {req?.status === 'PENDING' ? 'Pending' : 'Request Case Access'}
+                                  </button>
+                                </div>
+                              )}
                             </td>
                           </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                        )
+                      })
+                    )}
+                  </tbody>
+                </table>
               </div>
-            )}
+
+              {/* Case Owner Review Section (Section 3) */}
+              {cases.some(c => isCaseOwner(c)) && (
+                <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--border-color)' }}>
+                  <div className="case-create-heading" style={{ marginBottom: '16px' }}>
+                    <div>
+                      <h3>Case Access Requests (Owner Review)</h3>
+                      <p>Authorize or reject officers requesting access to cases registered by you.</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <span className="card-badge" style={{ color: pendingCaseOwnerRequests.length > 0 ? 'var(--accent-amber)' : 'inherit' }}>
+                        {pendingCaseOwnerRequests.length} Pending
+                      </span>
+                      <button
+                        className="btn btn-secondary btn-xs"
+                        onClick={() => fetchCaseOwnerRequests(cases)}
+                        disabled={casesLoading}
+                        title="Refresh case access requests"
+                      >
+                        <RefreshCw size={12} className={casesLoading ? 'spin' : ''} /> Refresh
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="table-container">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Case No</th>
+                          <th>Requesting User</th>
+                          <th>Reason</th>
+                          <th>Date Requested</th>
+                          <th style={{ textAlign: 'right' }}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pendingCaseOwnerRequests.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="empty-state">
+                              No pending access requests for cases owned by you.
+                            </td>
+                          </tr>
+                        ) : (
+                          pendingCaseOwnerRequests.map(req => (
+                            <tr key={req.id}>
+                              <td style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-cyan)', fontWeight: 600 }}>
+                                {req.caseId}
+                                {req.caseTitle && <div className="table-secondary-text">{req.caseTitle}</div>}
+                              </td>
+                              <td>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontWeight: 500 }}>
+                                  <User size={13} style={{ color: 'var(--accent-cyan)' }} />
+                                  {req.requestedUserId}
+                                </span>
+                              </td>
+                              <td>
+                                <div style={{ maxWidth: '320px', whiteSpace: 'normal', fontSize: '0.85rem' }}>
+                                  {req.reason || 'No justification provided'}
+                                </div>
+                              </td>
+                              <td style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                                {req.createdAt ? new Date(req.createdAt).toLocaleString() : '-'}
+                              </td>
+                              <td style={{ textAlign: 'right' }}>
+                                <div style={{ display: 'inline-flex', gap: '6px', justifyContent: 'flex-end' }}>
+                                  <button
+                                    className="btn btn-primary btn-xs"
+                                    disabled={ownerReviewActionLoading === req.id}
+                                    onClick={() => handleReviewCaseRequest(req.id, true, req.caseId)}
+                                    title="Approve access"
+                                  >
+                                    {ownerReviewActionLoading === req.id ? (
+                                      <>
+                                        <RefreshCw size={12} className="spin" /> Approving...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Check size={12} /> Approve
+                                      </>
+                                    )}
+                                  </button>
+                                  <button
+                                    className="btn btn-secondary btn-xs"
+                                    disabled={ownerReviewActionLoading === req.id}
+                                    onClick={() => handleReviewCaseRequest(req.id, false, req.caseId)}
+                                    title="Reject access request"
+                                    style={{ color: '#ef4444' }}
+                                  >
+                                    {ownerReviewActionLoading === req.id ? (
+                                      <>
+                                        <RefreshCw size={12} className="spin" /> Rejecting...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <X size={12} /> Reject
+                                      </>
+                                    )}
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
 
 
-            </> )}
+            </>)}
           </section>
         </main>
       )}
@@ -4070,7 +4070,7 @@ export default function App() {
         </div>
       )}
 
-        {/* ----------------------------------------------------
+      {/* ----------------------------------------------------
           MODAL: NYAYASETU SECURE DOCUMENT VIEWER
           ---------------------------------------------------- */}
       {viewerOpen && viewerDoc && viewSessionData && viewBlob && (

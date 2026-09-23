@@ -80,19 +80,10 @@ public class FaceVerificationServiceImpl implements FaceVerificationService {
 
                     if (fastApiResponse != null) {
                         log.info("FastAPI verification response: {}", fastApiResponse);
-                        boolean isMatch = Boolean.TRUE.equals(fastApiResponse.get("verified"))
-                                || Boolean.TRUE.equals(fastApiResponse.get("match"))
-                                || Boolean.TRUE.equals(fastApiResponse.get("is_match"))
-                                || "success".equalsIgnoreCase(String.valueOf(fastApiResponse.get("status")));
+                        boolean isSuccess = Boolean.TRUE.equals(fastApiResponse.get("success"));
+                        boolean isMatch = isSuccess && Boolean.TRUE.equals(fastApiResponse.get("match"));
                         
-                        double confidence = 0.95;
-                        if (fastApiResponse.get("confidence") instanceof Number num) {
-                            confidence = num.doubleValue();
-                        } else if (fastApiResponse.get("similarity") instanceof Number num) {
-                            confidence = num.doubleValue();
-                        } else if (fastApiResponse.get("similarity_score") instanceof Number num) {
-                            confidence = num.doubleValue();
-                        }
+                        double confidence = isMatch ? 1.0 : 0.0;
 
                         if (isMatch) {
                             return FaceVerificationResult.match(confidence, "Biometric face verification successful via FastAPI service.");
@@ -102,18 +93,30 @@ public class FaceVerificationServiceImpl implements FaceVerificationService {
                         }
                     }
                 } catch (Exception fastApiEx) {
-                    log.warn("External FastAPI face verification call failed: {}. Falling back to internal validation.", fastApiEx.getMessage());
+                    log.error("External FastAPI face verification call failed: {}", fastApiEx.getMessage());
+                    String errorMsg = "Face verification service is currently unavailable.";
+                    
+                    if (fastApiEx.getMessage() != null) {
+                        if (fastApiEx.getMessage().contains("FastAPI face verification error")) {
+                            // Extract the exact error message provided by FastAPI
+                            int idx = fastApiEx.getMessage().indexOf("): ");
+                            if (idx != -1) {
+                                errorMsg = fastApiEx.getMessage().substring(idx + 3);
+                            } else {
+                                errorMsg = fastApiEx.getMessage();
+                            }
+                        } else if (fastApiEx.getMessage().contains("unreachable")) {
+                            errorMsg = "FastAPI service is currently unreachable.";
+                        }
+                    }
+                    return FaceVerificationResult.noMatch(0.0, errorMsg);
                 }
+            } else {
+                log.warn("FastAPI service is not configured or userId is missing.");
+                return FaceVerificationResult.noMatch(0.0, "Face verification service not configured or missing userId.");
             }
 
-            /*
-             * MODULAR AI / BIOMETRIC FALLBACK EXTENSION POINT:
-             * For standard pipeline validation when both valid facial frames are supplied,
-             * verification succeeds with high confidence score.
-             */
-            double matchScore = 0.96; // Standard 96% biometric feature match
-            log.info("Face verification completed successfully with confidence score: {}%", matchScore * 100);
-            return FaceVerificationResult.match(matchScore, "Face biometric verification successful.");
+            return FaceVerificationResult.noMatch(0.0, "Unexpected error in face verification pipeline.");
 
         } catch (Exception e) {
             log.error("Exception occurred during face verification: {}", e.getMessage(), e);

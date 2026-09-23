@@ -17,7 +17,7 @@ public interface CaseAccessRepository extends JpaRepository<case_access, Integer
     List<case_access> findByUser_id(@Param("userId") String userId);
 
     @Query("SELECT ca FROM case_access ca WHERE ca.case_id = :caseId AND ca.user_id = :userId")
-    Optional<case_access> findByCase_idAndUser_id(@Param("caseId") String caseId, @Param("userId") String userId);
+    List<case_access> findByCase_idAndUser_id(@Param("caseId") String caseId, @Param("userId") String userId);
 
     @Query("SELECT CASE WHEN COUNT(ca) > 0 THEN true ELSE false END FROM case_access ca WHERE ca.case_id = :caseId AND ca.user_id = :userId")
     boolean existsByCase_idAndUser_id(@Param("caseId") String caseId, @Param("userId") String userId);

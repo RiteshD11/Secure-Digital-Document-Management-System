@@ -37,7 +37,7 @@ spring:
     activate:
       on-profile: mysql
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/secure_dms?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/securitymanagementdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:root@123}
     driverClassName: com.mysql.cj.jdbc.Driver

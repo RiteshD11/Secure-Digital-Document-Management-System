@@ -27,8 +27,8 @@ public class CaseAccessService {
     private final CaseAccessRequestRepository caseAccessRequestRepository;
 
     public CaseAccessService(CaseRepository caseRepository,
-                             CaseAccessRepository caseAccessRepository,
-                             CaseAccessRequestRepository caseAccessRequestRepository) {
+            CaseAccessRepository caseAccessRepository,
+            CaseAccessRequestRepository caseAccessRequestRepository) {
         this.caseRepository = caseRepository;
         this.caseAccessRepository = caseAccessRepository;
         this.caseAccessRequestRepository = caseAccessRequestRepository;
@@ -75,27 +75,10 @@ public class CaseAccessService {
                 .map(case_access::getCase_id)
                 .map(caseRepository::findByCase_number)
                 .flatMap(Optional::stream)
+                .distinct()
                 .toList();
 
-        if (!userCases.isEmpty()) {
-            return userCases;
-        }
-
-        List<cases> all = caseRepository.findAll();
-        if (!all.isEmpty()) {
-            for (cases c : all) {
-                grantCaseAccess(c.getCase_number(), normalizedUserId, c.getCreated_by());
-            }
-            return all;
-        }
-
-        CreateCaseRequest initReq = new CreateCaseRequest();
-        initReq.setCaseNumber("CASE-2026-001");
-        initReq.setTitle("General Legal & Forensic Investigation");
-        initReq.setDescription("Primary investigation case for digital evidence intake and document verification.");
-        initReq.setCreatedBy(normalizedUserId);
-        cases defaultCase = createCase(initReq);
-        return List.of(defaultCase);
+        return userCases;
     }
 
     @Transactional(readOnly = true)
@@ -104,8 +87,8 @@ public class CaseAccessService {
             return false;
         }
         return caseAccessRepository.findByCase_idAndUser_id(caseNumber.trim(), userId.trim())
-                .map(this::isActive)
-                .orElse(false);
+                .stream()
+                .anyMatch(this::isActive);
     }
 
     @Transactional(readOnly = true)
@@ -146,9 +129,10 @@ public class CaseAccessService {
         cases targetCase = caseRepository.findByCase_number(normalizedCaseNumber)
                 .orElseThrow(() -> new EntityNotFoundException("Case not found: " + normalizedCaseNumber));
 
-        Optional<case_access> existingAccess = caseAccessRepository.findByCase_idAndUser_id(normalizedCaseNumber, normalizedUserId);
-        if (existingAccess.isPresent()) {
-            case_access access = existingAccess.get();
+        List<case_access> existingAccess = caseAccessRepository.findByCase_idAndUser_id(normalizedCaseNumber,
+                normalizedUserId);
+        if (!existingAccess.isEmpty()) {
+            case_access access = existingAccess.get(0);
             access.setGrantedBy(normalizedGrantedBy);
             access.setGrantedAt(LocalDateTime.now());
             access.setStatus(AccessStatus.ACTIVE);
