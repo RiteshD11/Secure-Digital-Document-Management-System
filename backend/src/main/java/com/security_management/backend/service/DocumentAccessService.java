@@ -81,8 +81,17 @@ public class DocumentAccessService {
     public List<DocumentAccessRequest> getAccessRequests(String documentId, String requestingUserId) {
         Document document = documentRepository.findById(documentId)
                 .orElseThrow(() -> new EntityNotFoundException("Document not found: " + documentId));
-        caseAccessService.requireCaseOwner(document.getCaseId(), requestingUserId);
-        return documentAccessRequestRepository.findByDocumentIdOrderByCreatedAtDesc(documentId);
+        if (requestingUserId == null) {
+            throw new SecurityException("Authenticated user is required.");
+        }
+        if (requestingUserId.equals(document.getUploadedBy())) {
+            return documentAccessRequestRepository.findByDocumentIdOrderByCreatedAtDesc(documentId);
+        } else {
+            Integer resolvedUserId = resolveUserId(requestingUserId);
+            return documentAccessRequestRepository.findByDocumentIdOrderByCreatedAtDesc(documentId).stream()
+                .filter(req -> requestingUserId.equals(req.getRequestedBy()) || (resolvedUserId != null && resolvedUserId.equals(req.getRequestedUserId())))
+                .toList();
+        }
     }
 
     @Transactional
@@ -96,7 +105,9 @@ public class DocumentAccessService {
 
         Document document = documentRepository.findById(request.getDocumentId())
                 .orElseThrow(() -> new EntityNotFoundException("Document not found: " + request.getDocumentId()));
-        caseAccessService.requireCaseOwner(document.getCaseId(), reviewedBy);
+        if (reviewedBy == null || !reviewedBy.equals(document.getUploadedBy())) {
+            throw new SecurityException("Only the document owner can review access requests for this document.");
+        }
 
         request.setReviewedBy(reviewedBy);
         request.setReviewedAt(LocalDateTime.now());
@@ -218,9 +229,7 @@ public class DocumentAccessService {
     public boolean checkAccess(String documentId, String userId, DocumentPermission requestedPermission) {
         Optional<Document> document = documentRepository.findById(documentId);
         if (document.isPresent()
-                && (requestedPermission == DocumentPermission.VIEW
-                || requestedPermission == DocumentPermission.DOWNLOAD
-                || requestedPermission == DocumentPermission.UPLOAD)
+                && (requestedPermission == DocumentPermission.VIEW)
                 && caseAccessService.hasActiveAccess(document.get().getCaseId(), userId)) {
             return true;
         }
@@ -244,9 +253,7 @@ public class DocumentAccessService {
             return false;
         }
 
-        if ((requestedPermission == DocumentPermission.VIEW
-                || requestedPermission == DocumentPermission.DOWNLOAD
-                || requestedPermission == DocumentPermission.UPLOAD)
+        if ((requestedPermission == DocumentPermission.VIEW)
                 && caseAccessService.hasActiveAccess(document.get().getCaseId(), String.valueOf(userId))) {
             return true;
         }

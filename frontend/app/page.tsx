@@ -141,7 +141,7 @@ export default function App() {
   const [regNotice, setRegNotice] = useState<{ type: 'error' | 'success'; message: string } | null>(null)
 
   // Dashboard Main States
-  const [activeTab, setActiveTab] = useState<'upload' | 'document-vault' | 'document-request' | 'audit' | 'view-cases' | 'create-case'>('upload')
+  const [activeTab, setActiveTab] = useState<'upload' | 'document-vault' | 'document-request' | 'audit' | 'view-cases' | 'create-case' | 'e-connect'>('upload')
   const [backendOnline, setBackendOnline] = useState<boolean>(true)
   const [backendPort, setBackendPort] = useState<string>('8082')
 
@@ -2353,17 +2353,7 @@ export default function App() {
               </div>
             )}
 
-            {/* Quick Skip Dev Button (Preserves full login/register UI above) */}
-            <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
-              <button
-                type="button"
-                onClick={loginWithDefaultOfficer}
-                className="btn btn-secondary"
-                style={{ width: '100%', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-              >
-                <span>⚡</span> Skip Login &amp; Enter Dashboard Directly
-              </button>
-            </div>
+
           </div>
         </div>
 
@@ -2461,6 +2451,15 @@ export default function App() {
                 onClick={() => { setActiveTab('audit'); loadAuditLogs(); }}
               >
                 Audit Trail
+              </button>
+            </li>
+            
+            <li className="nav-item">
+              <button
+                className={`nav-tab-btn ${activeTab === 'e-connect' ? 'active' : ''}`}
+                onClick={() => setActiveTab('e-connect')}
+              >
+                e-Connect
               </button>
             </li>
           </ul>
@@ -3459,6 +3458,53 @@ export default function App() {
                   )}
                 </tbody>
               </table>
+            </div>
+          </section>
+        </main>
+      )}
+
+      {/* ----------------------------------------------------
+          TAB: E-CONNECT (DEMO)
+          ---------------------------------------------------- */}
+      {activeTab === 'e-connect' && (
+        <main className="tab-content active">
+          <section className="card">
+            <div className="card-header">
+              <h2>e-Connect Integrations</h2>
+              <p>Securely interface with external government and law enforcement systems.</p>
+            </div>
+            <div className="card-body" style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', padding: '20px' }}>
+              <div style={{ padding: '20px', border: '1px solid var(--border-color)', borderRadius: '8px', flex: '1', minWidth: '300px', background: 'var(--bg-subtle)' }}>
+                <h3 style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Shield size={18} style={{ color: 'var(--accent-cyan)' }} />
+                  CCTNS Integration
+                </h3>
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '20px' }}>
+                  Connect with the Crime and Criminal Tracking Network & Systems to automatically sync case records and FIR data.
+                </p>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={() => showToast('CCTNS connection initiated (Demo)', 'info')}
+                >
+                  Connect with CCTNS
+                </button>
+              </div>
+
+              <div style={{ padding: '20px', border: '1px solid var(--border-color)', borderRadius: '8px', flex: '1', minWidth: '300px', background: 'var(--bg-subtle)' }}>
+                <h3 style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Database size={18} style={{ color: 'var(--accent-cyan)' }} />
+                  e-Sakshi Integration
+                </h3>
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '20px' }}>
+                  Interface with the e-Sakshi portal to securely transfer digital evidence and cryptographic proofs.
+                </p>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={() => showToast('e-Sakshi connection initiated (Demo)', 'info')}
+                >
+                  Connect with e-Sakshi
+                </button>
+              </div>
             </div>
           </section>
         </main>

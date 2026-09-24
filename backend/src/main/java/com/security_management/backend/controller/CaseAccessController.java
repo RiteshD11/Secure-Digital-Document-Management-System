@@ -82,8 +82,8 @@ public class CaseAccessController {
 
     @GetMapping("/cases/{caseNumber}/access/requests")
     public ResponseEntity<List<CaseAccessRequest>> getCaseAccessRequests(@PathVariable String caseNumber) {
-        caseAccessService.requireCaseOwner(caseNumber, requireAuthenticatedUser());
-        return ResponseEntity.ok(caseAccessService.getCaseAccessRequests(caseNumber));
+        String requestingUserId = requireAuthenticatedUser();
+        return ResponseEntity.ok(caseAccessService.getCaseAccessRequests(caseNumber, requestingUserId));
     }
 
     @PutMapping("/cases/access/requests/{requestId}")

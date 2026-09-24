@@ -180,10 +180,16 @@ public class CaseAccessService {
     }
 
     @Transactional(readOnly = true)
-    public List<CaseAccessRequest> getCaseAccessRequests(String caseNumber) {
+    public List<CaseAccessRequest> getCaseAccessRequests(String caseNumber, String requestingUserId) {
         String normalized = normalizeRequired(caseNumber, "caseNumber");
-        getCase(normalized);
-        return caseAccessRequestRepository.findByCaseIdOrderByCreatedAtDesc(normalized);
+        cases targetCase = getCase(normalized);
+        if (requestingUserId != null && requestingUserId.equals(targetCase.getCreated_by())) {
+            return caseAccessRequestRepository.findByCaseIdOrderByCreatedAtDesc(normalized);
+        } else {
+            return caseAccessRequestRepository.findByCaseIdOrderByCreatedAtDesc(normalized).stream()
+                .filter(req -> requestingUserId != null && (requestingUserId.equals(req.getRequestedBy()) || requestingUserId.equals(req.getRequestedUserId())))
+                .toList();
+        }
     }
 
     @Transactional
