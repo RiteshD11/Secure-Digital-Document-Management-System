@@ -2353,17 +2353,7 @@ export default function App() {
               </div>
             )}
 
-            {/* Quick Skip Dev Button (Preserves full login/register UI above) */}
-            <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid var(--border-color)', textAlign: 'center' }}>
-              <button
-                type="button"
-                onClick={loginWithDefaultOfficer}
-                className="btn btn-secondary"
-                style={{ width: '100%', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-              >
-                <span>⚡</span> Skip Login &amp; Enter Dashboard Directly
-              </button>
-            </div>
+
           </div>
         </div>
 
