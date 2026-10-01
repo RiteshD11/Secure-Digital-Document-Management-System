@@ -20,9 +20,21 @@ public class registerService {
     public userRepository userRepository;
     private BCryptPasswordEncoder encoder=new BCryptPasswordEncoder(12);
 
-    public void registerUser(String  mail){
+    public void registerUser(String mail) {
+        if (mail == null || mail.isBlank()) {
+            throw new IllegalArgumentException("Email is required for registration.");
+        }
 
-        otpService.sendOtp(mail);
+        String normalizedMail = mail.trim();
+        if (!normalizedMail.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            throw new IllegalArgumentException("Please provide a valid email address.");
+        }
+
+        if (userRepository != null && userRepository.findByUsername(normalizedMail) != null) {
+            throw new RuntimeException("Email is already taken");
+        }
+
+        otpService.sendOtp(normalizedMail);
 
 /*
 //         Here Code for the otp
@@ -45,8 +57,11 @@ public class registerService {
         return userRepository.findByUsername(username);
     }
     public boolean findUser(String email){
+        if (email == null || email.isBlank()) {
+            return false;
+        }
 
-        return (userRepository.findByUsername(email)!=null)?true:false;
+        return (userRepository != null && userRepository.findByUsername(email.trim()) != null);
     }
 
 }

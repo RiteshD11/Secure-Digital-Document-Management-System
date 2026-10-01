@@ -71,11 +71,21 @@ public class authRequests {
 
 
     @PostMapping("/register")
-    public String registerUser(@RequestBody incompleteprofile incompleteprofile){
+    public org.springframework.http.ResponseEntity<Map<String, String>> registerUser(@RequestBody Map<String, String> request) {
+        String mail = request == null ? null : (request.get("mail") != null ? request.get("mail") : request.get("email"));
 
-         registerService.registerUser(incompleteprofile.getMail());
-         return "User addded ";
-
+        try {
+            registerService.registerUser(mail);
+            return org.springframework.http.ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "message", "OTP sent to your email."
+            ));
+        } catch (RuntimeException e) {
+            return org.springframework.http.ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "message", e.getMessage()
+            ));
+        }
     }
 
     @PostMapping(value = "/set-profile", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)

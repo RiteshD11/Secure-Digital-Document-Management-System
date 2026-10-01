@@ -64,8 +64,12 @@ public class otpService {
         return response;
     }
     public String sendOtp(String mail){
+        if (mail == null || mail.isBlank()) {
+            throw new IllegalArgumentException("Email is required for registration.");
+        }
 
-        if(registerService.findUser(mail)){
+        String normalizedMail = mail.trim();
+        if(registerService.findUser(normalizedMail)){
             throw new RuntimeException("Email is already taken");
         }
         String otp=String.valueOf((int)(Math.random()*900000)+100000);
